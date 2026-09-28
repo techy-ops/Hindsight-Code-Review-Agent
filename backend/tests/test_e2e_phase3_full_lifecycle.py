@@ -103,7 +103,7 @@ async def test_phase3_end_to_end_productized_learning_workflow(monkeypatch):
         assert timeline[1]["type"] == "review"
 
     # 5. Review 2 - Next review recalls the rejected suggestion
-    async def fake_review2_llm(prompt, *args, **kwargs):
+    async def fake_review2_llm(self, prompt, *args, **kwargs):
         # Prompt must include the negative constraint from MemoryContextBuilder
         assert "DO NOT RECOMMEND" in prompt or "REJECTED" in prompt
         assert "Redis" in prompt

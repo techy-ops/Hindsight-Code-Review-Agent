@@ -123,8 +123,8 @@ Hindsight operations are completely non-blocking and fault-tolerant:
 ```text
 AI-code-review-agent/
 ├── frontend/
-│   ├── index.html                 # Review dashboard with feedback actions ([Accept], [Reject], [Mark Fixed])
-│   ├── developer_dashboard/       # Developer management screens
+│   ├── index.html                 # Review dashboard with feedback actions, tabs, explorer, timeline & demo
+│   ├── developer_dashboard/       # Developer metrics querying live /dashboard/stats
 │   ├── review_history/            # History viewer
 │   ├── api_documentation/         # Interactive documentation
 │   ├── platform_documentation/    # Platform guides
@@ -133,14 +133,15 @@ AI-code-review-agent/
 │   └── pricing/                   # Pricing tier view
 │
 ├── backend/
-│   ├── main.py                    # FastAPI application, review & feedback endpoints
+│   ├── main.py                    # FastAPI application, review, feedback, dashboard & explorer endpoints
 │   ├── config.py                  # Configuration with Phase 2 reflection & developer settings
-│   ├── hindsight_service.py       # Hindsight client wrapper (recall, retain, reflect, status)
+│   ├── hindsight_service.py       # Hindsight client wrapper (recall, retain, reflect, list_memories, status)
 │   ├── memory_model.py            # Schemas for memories, feedback, sanitization & confidence calibration
-│   ├── memory_context_builder.py  # Prompt assembly with reflection & rejected suggestion suppression
+│   ├── memory_context_builder.py  # Prompt assembly, rejected rule suppression & review explainability enrichment
+│   ├── activity_tracker.py        # Thread-safe tracker for genuine review, memory, feedback & timeline events
 │   ├── requirements.txt           # Python dependencies
 │   ├── .env.example               # Environment variable documentation
-│   └── tests/                     # 48 comprehensive unit, integration & E2E tests
+│   └── tests/                     # 58 comprehensive unit, integration & E2E tests
 │       ├── conftest.py
 │       ├── test_config.py
 │       ├── test_memory_model.py
@@ -151,7 +152,9 @@ AI-code-review-agent/
 │       ├── test_feedback.py
 │       ├── test_reflection.py
 │       ├── test_personalization.py
-│       └── test_e2e_learning_workflow.py
+│       ├── test_e2e_learning_workflow.py
+│       ├── test_phase3_dashboard_and_explorer.py
+│       └── test_e2e_phase3_full_lifecycle.py
 │
 ├── pytest.ini                     # Pytest configuration
 └── README.md
@@ -248,20 +251,20 @@ uvicorn main:app --reload
 
 ## 🧪 Running Tests
 
-Execute the comprehensive test suite covering unit tests, contract preservation, failure fallbacks, developer & team memory isolation, reflection, negative feedback suppression, and the complete end-to-end learning lifecycle:
+Execute the comprehensive test suite covering unit tests, contract preservation, failure fallbacks, developer & team memory isolation, reflection, negative feedback suppression, dashboard metrics, memory explorer, explainability enrichment, and the complete end-to-end learning lifecycle:
 
 ```bash
 pytest backend/tests -v
 ```
 
-All 48 tests run with fast deterministic mocks and require no active cloud credentials.
+All 58 tests run with fast deterministic mocks and require no active cloud credentials.
 
 ---
 
 ## 📡 API Reference
 
 ### `POST /review`
-Analyze source code with Hindsight memory awareness, reflection synthesis, and developer personalization.
+Analyze source code with Hindsight memory awareness, reflection synthesis, developer personalization, and explainability enrichment.
 
 **Request:**
 ```json
@@ -287,7 +290,12 @@ Analyze source code with Hindsight memory awareness, reflection synthesis, and d
       "severity": "critical",
       "title": "SQL Injection Vulnerability",
       "description": "Raw string concatenation in SQL queries allows arbitrary query execution.",
-      "suggestion": "Use parameterized queries with db.execute('SELECT * FROM users WHERE id = :id', {'id': id})."
+      "suggestion": "Use parameterized queries with db.execute('SELECT * FROM users WHERE id = :id', {'id': id}).",
+      "origin": "learned_context",
+      "influenced_by_memory": true,
+      "relevant_memory": "Project 'auth-service' convention: Always use repository pattern and parameterized SQL.",
+      "evidence_level": "established_convention",
+      "why_it_matters": "Enforces team convention: Project 'auth-service' convention: Always use repository pattern and parameterized SQL."
     }
   ],
   "memory": {
@@ -306,6 +314,13 @@ Analyze source code with Hindsight memory awareness, reflection synthesis, and d
     "reflection_summary": "Project strongly prefers repository-based database access and parameterized SQL queries.",
     "rejected_rules_count": 1,
     "memories_retained": 1
+  },
+  "explainability": {
+    "total_findings": 1,
+    "learned_context_count": 1,
+    "new_findings_count": 0,
+    "memory_influenced": true,
+    "summary": "1 finding influenced by historical project conventions and developer feedback."
   }
 }
 ```
@@ -360,6 +375,25 @@ Synthesize higher-level team conventions and coding patterns from accumulated me
   "facts_count": 2
 }
 ```
+
+### `GET /dashboard/stats`
+Return truthful system-wide and project-specific metrics from live activity tracking and Hindsight:
+- `total_reviews`
+- `memories_retained`
+- `memories_recalled`
+- `feedback_events` (accept / reject / fixed breakdown)
+- `learned_conventions_count`
+- `reflections_count`
+- `hindsight_status` (`connected`, `offline`, or `disabled`)
+
+### `GET /memory/explorer`
+Search and filter durable memory items by `project_id`, `developer_id`, `category`, and `query`. Returns truthful items from live Hindsight bank or empty list when offline.
+
+### `GET /learning/timeline`
+Chronological learning audit trail showing how initial reviews, feedback, retained memories, and reflection lead to personalized reviews.
+
+### `GET /demo/scenarios`
+Preconfigured interactive demonstration scenarios for the Before/After Learning demo stepper.
 
 ### `POST /rewrite`
 Generate an optimized, idiomatic rewrite of the submitted code.

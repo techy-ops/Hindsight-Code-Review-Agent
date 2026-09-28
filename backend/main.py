@@ -12,7 +12,8 @@ import google.generativeai as genai
 from config import get_settings
 from hindsight_service import get_hindsight_service
 from memory_model import extract_durable_knowledge, sanitize_text, FeedbackRequest
-from memory_context_builder import build_memory_context
+from memory_context_builder import build_memory_context, enrich_review_explainability
+from activity_tracker import get_activity_tracker
 
 # Configure structured logging
 logging.basicConfig(
@@ -22,6 +23,7 @@ logging.basicConfig(
 logger = logging.getLogger("code_review_agent")
 
 settings = get_settings()
+tracker = get_activity_tracker()
 
 app = FastAPI(
     title="AI Code Review & Rewrite Agent (Hindsight-Powered)",

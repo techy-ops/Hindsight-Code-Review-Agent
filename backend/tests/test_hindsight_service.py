@@ -161,8 +161,75 @@ async def test_recall_memory_failure_returns_empty_fallback():
 
 
 @pytest.mark.asyncio
-async def test_reflect_memory_raises_not_implemented_for_phase1():
-    service = HindsightService()
-    with pytest.raises(NotImplementedError) as exc_info:
-        await service.reflect_memory("proj", "query")
-    assert "Phase 2" in str(exc_info.value)
+async def test_reflect_memory_success():
+    settings = Settings(hindsight_enabled=True, hindsight_reflect_enabled=True, hindsight_bank_id="test-bank")
+    service = HindsightService(config=settings)
+
+    mock_fact = MagicMock()
+    mock_fact.text = "Repository pattern accepted 5 times"
+    mock_response = MagicMock()
+    mock_response.text = "Project strongly prefers repository pattern for database interactions."
+    mock_response.based_on = [mock_fact]
+
+    mock_client = MagicMock()
+    mock_client.areflect = AsyncMock(return_value=mock_response)
+    service._client = mock_client
+
+    result = await service.reflect_memory(
+        project_id="repo-1",
+        query="Synthesize conventions",
+        developer_id="dev-alice"
+    )
+
+    assert result is not None
+    assert "strongly prefers repository pattern" in result["text"]
+    assert len(result["based_on"]) == 1
+    assert result["developer_id"] == "dev-alice"
+
+
+@pytest.mark.asyncio
+async def test_reflect_memory_failure_falls_back_to_none():
+    settings = Settings(hindsight_enabled=True, hindsight_reflect_enabled=True)
+    service = HindsightService(config=settings)
+
+    mock_client = MagicMock()
+    mock_client.areflect = AsyncMock(side_effect=TimeoutError("Reflection timeout"))
+    service._client = mock_client
+
+    # Should not raise exception
+    result = await service.reflect_memory(
+        project_id="repo-1",
+        query="Synthesize conventions"
+    )
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_retain_feedback_success():
+    from memory_model import FeedbackRequest
+    settings = Settings(hindsight_enabled=True, hindsight_bank_id="test-bank")
+    service = HindsightService(config=settings)
+
+    mock_client = MagicMock()
+    mock_client.acreate_bank = AsyncMock()
+    mock_client.aretain = AsyncMock()
+    service._client = mock_client
+
+    fb = FeedbackRequest(
+        project_id="repo-1",
+        developer_id="dev-bob",
+        issue_title="Use Redis caching",
+        recommendation="Install redis-py",
+        action="reject",
+        reason="Project uses PostgreSQL caching"
+    )
+
+    success = await service.retain_feedback(fb)
+    assert success is True
+    assert mock_client.aretain.called
+    call_kwargs = mock_client.aretain.call_args.kwargs
+    assert "REJECTED" in call_kwargs["content"]
+    assert "PostgreSQL caching" in call_kwargs["content"]
+    assert "action:reject" in call_kwargs["tags"]
+    assert "developer:dev-bob" in call_kwargs["tags"]
+

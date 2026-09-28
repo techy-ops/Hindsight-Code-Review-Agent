@@ -274,6 +274,49 @@ class HindsightService:
             )
             return None
 
+    async def list_memories(
+        self,
+        project_id: str = "default-project",
+        search_query: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """List persisted memory units from Hindsight for a given project.
+        
+        Uses real client.alist_memories() when available. Returns empty list on failure.
+        """
+        if not self.config.hindsight_enabled:
+            return []
+
+        client = self._get_client()
+        if not client or not hasattr(client, "alist_memories"):
+            return []
+
+        bank_id = self.resolve_bank_id(project_id)
+        try:
+            response = await client.alist_memories(
+                bank_id=bank_id,
+                search_query=search_query,
+                limit=limit,
+            )
+            raw_items = getattr(response, "items", []) or []
+            results: List[Dict[str, Any]] = []
+            for item in raw_items:
+                text = getattr(item, "text", "") or (item.get("text", "") if isinstance(item, dict) else "")
+                if not text:
+                    continue
+                results.append({
+                    "id": getattr(item, "id", None) or (item.get("id") if isinstance(item, dict) else None),
+                    "text": text,
+                    "category": getattr(item, "fact_type", "observation") or "observation",
+                    "metadata": getattr(item, "metadata", {}) or {},
+                    "tags": getattr(item, "tags", []) or [],
+                    "created_at": getattr(item, "mentioned_at", None) or getattr(item, "updated_at", None),
+                })
+            return results
+        except Exception as e:
+            logger.warning("Hindsight list_memories failed for '%s': %s", project_id, type(e).__name__)
+            return []
+
     async def retain_memory(
         self,
         project_id: str,

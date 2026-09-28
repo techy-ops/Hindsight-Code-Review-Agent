@@ -14,13 +14,17 @@ AI Code Review & Rewrite Agent helps developers identify **bugs, security vulner
 * 🪞 **Hindsight Reflection Engine** — Leverages Hindsight's `reflect()` API to synthesize durable conventions from recurring patterns
 * 🚫 **Negative Feedback Suppression** — Prevents repeatedly proposing recommendations previously rejected by the team for project-specific reasons
 * ⚖️ **Calibrated Confidence Wording** — Distinguishes between isolated observations, repeated patterns, and established conventions
+* 📊 **Real-Time Memory & Learning Dashboard** — Live metrics tracking reviews, retained/recalled memories, feedback events, conventions, and Hindsight connectivity
+* 🔍 **Persistent Memory Explorer** — Search, audit, and filter durable team conventions and knowledge units by project, category, and source
+* 💡 **Review Explainability Engine** — Distinct visual indicators separating `NEW FINDING` from `LEARNED CONTEXT`, citing exact historical conventions
+* ⏳ **Chronological Learning Timeline** — Visual evolution tracing the lifecycle from initial review to feedback, retention, reflection, and personalized reviews
+* 🎬 **Interactive Before/After Demo** — 1-click verification demonstrating how feedback adapts the agent's behavior on subsequent code reviews
 * 🛡️ **Secret & Token Sanitization** — Automatically redacts API keys, passwords, and tokens before retention
 * 🔍 **AI Code Review** — Analyze code and receive intelligent feedback powered by Gemini 2.5 Flash
 * 🐛 **Bug & Vulnerability Detection** — Identify logical errors, security flaws, and performance bottlenecks
 * ⚡ **Performance Optimization** — Find inefficient algorithms and suggest optimized implementations
 * ✍️ **AI Code Rewrite** — Generate cleaner, secure, and idiomatic code with diff breakdown
 * 🌐 **Multi-Language Support** — Review Python, JavaScript, TypeScript, Rust, and Go
-* 📊 **Developer Dashboard** — Interactive code review interface with memory visibility and feedback actions (Accept, Reject, Mark Fixed)
 * 🛡️ **Graceful Degradation** — Always functions as a standard review agent even if memory services or reflection are offline
 
 ---

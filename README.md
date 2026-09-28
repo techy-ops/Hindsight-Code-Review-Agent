@@ -155,7 +155,7 @@ def calculate_sum(numbers):
 ## 👨‍💻 Author
 
 **Krishna Keerthana**
-[Mailto](krishnakeerthanapotharaju@gmail.com)
+[Mail](krishnakeerthanapotharaju@gmail.com)
 [GitHub](https://github.com/techy-ops)
 
 ---

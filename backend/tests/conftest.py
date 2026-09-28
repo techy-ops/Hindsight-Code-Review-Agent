@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 import pytest
-from httpx import ASGITransport, AsyncClient
+from fastapi.testclient import TestClient
 
 # Ensure backend directory is in sys.path
 backend_dir = Path(__file__).resolve().parent.parent
@@ -18,7 +18,6 @@ os.environ["DEFAULT_PROJECT_ID"] = "test-project"
 
 from main import app
 from config import Settings
-from hindsight_service import HindsightService
 
 
 @pytest.fixture
@@ -34,7 +33,6 @@ def test_settings():
 
 
 @pytest.fixture
-async def async_client():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
+def client():
+    with TestClient(app) as c:
+        yield c

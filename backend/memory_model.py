@@ -76,12 +76,14 @@ def extract_durable_knowledge(
             continue
 
         severity = issue.get("severity", "medium").lower()
-        title = sanitize_text(issue.get("title", "Review Finding")).strip()
+        title = sanitize_text(issue.get("title", "")).strip()
         description = sanitize_text(issue.get("description", "")).strip()
         suggestion = sanitize_text(issue.get("suggestion", "")).strip()
 
         if not title and not description:
             continue
+        if not title:
+            title = "Review Finding"
 
         # Categorize finding
         title_lower = title.lower() + " " + description.lower()

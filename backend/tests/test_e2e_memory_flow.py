@@ -5,8 +5,7 @@ import google.generativeai as genai
 from main import app, hindsight_service
 
 
-@pytest.mark.asyncio
-async def test_end_to_end_memory_lifecycle(async_client):
+def test_end_to_end_memory_lifecycle(client):
     """Proves the complete Phase 1 lifecycle:
     
     CYCLE 1 (First Review):
@@ -73,7 +72,7 @@ async def test_end_to_end_memory_lifecycle(async_client):
         # FIRST REVIEW: Clean project without historical memory
         # -------------------------------------------------------------
         with patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=first_review_ai_response)) as mock_ai_1:
-            resp1 = await async_client.post(
+            resp1 = client.post(
                 "/review",
                 json={
                     "code": "def process_payment(db, amount): return db.execute('INSERT INTO payments ...')",
@@ -100,7 +99,7 @@ async def test_end_to_end_memory_lifecycle(async_client):
         # SECOND REVIEW: Subsequent code in same project
         # -------------------------------------------------------------
         with patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=second_review_ai_response)) as mock_ai_2:
-            resp2 = await async_client.post(
+            resp2 = client.post(
                 "/review",
                 json={
                     "code": "def refund_payment(db, refund_id): return db.execute('UPDATE payments ...')",

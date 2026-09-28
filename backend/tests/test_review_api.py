@@ -44,9 +44,8 @@ def mock_gemini_rewrite_response():
     return mock_resp
 
 
-@pytest.mark.asyncio
-async def test_review_with_recalled_memory_included_in_prompt(
-    async_client,
+def test_review_with_recalled_memory_included_in_prompt(
+    client,
     mock_gemini_review_response
 ):
     """Test review succeeds when Hindsight returns memories and memory is passed to LLM."""
@@ -64,7 +63,7 @@ async def test_review_with_recalled_memory_included_in_prompt(
          patch.object(hindsight_service, "retain_knowledge_records", AsyncMock(return_value=1)) as mock_retain, \
          patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=mock_gemini_review_response)) as mock_generate:
 
-        response = await async_client.post(
+        response = client.post(
             "/review",
             json={
                 "code": "def get_user(db, user_id): return db.execute('SELECT * FROM users')",
@@ -95,9 +94,8 @@ async def test_review_with_recalled_memory_included_in_prompt(
         assert "CRITICAL MEMORY INSTRUCTIONS:" in prompt_sent
 
 
-@pytest.mark.asyncio
-async def test_review_no_memories_first_time(
-    async_client,
+def test_review_no_memories_first_time(
+    client,
     mock_gemini_review_response
 ):
     """Test first-time review when no memories exist yet in Hindsight."""
@@ -105,7 +103,7 @@ async def test_review_no_memories_first_time(
          patch.object(hindsight_service, "retain_knowledge_records", AsyncMock(return_value=1)) as mock_retain, \
          patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=mock_gemini_review_response)):
 
-        response = await async_client.post(
+        response = client.post(
             "/review",
             json={
                 "code": "def process(): pass",
@@ -121,9 +119,8 @@ async def test_review_no_memories_first_time(
         assert data["memory"]["learning_context_applied"] is False
 
 
-@pytest.mark.asyncio
-async def test_review_when_recall_fails_falls_back(
-    async_client,
+def test_review_when_recall_fails_falls_back(
+    client,
     mock_gemini_review_response
 ):
     """Test that if Hindsight recall raises an error, the review continues normally."""
@@ -131,7 +128,7 @@ async def test_review_when_recall_fails_falls_back(
          patch.object(hindsight_service, "retain_knowledge_records", AsyncMock(return_value=0)), \
          patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=mock_gemini_review_response)):
 
-        response = await async_client.post(
+        response = client.post(
             "/review",
             json={
                 "code": "def calculate(): return 42",
@@ -145,9 +142,8 @@ async def test_review_when_recall_fails_falls_back(
         assert data["memory"]["status"] == "error"
 
 
-@pytest.mark.asyncio
-async def test_review_when_retain_fails_succeeds(
-    async_client,
+def test_review_when_retain_fails_succeeds(
+    client,
     mock_gemini_review_response
 ):
     """Test that if Hindsight retain fails, the review succeeds and returns properly."""
@@ -155,7 +151,7 @@ async def test_review_when_retain_fails_succeeds(
          patch.object(hindsight_service, "retain_knowledge_records", AsyncMock(side_effect=Exception("Storage full"))), \
          patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=mock_gemini_review_response)):
 
-        response = await async_client.post(
+        response = client.post(
             "/review",
             json={
                 "code": "def send_email(): pass",
@@ -170,9 +166,8 @@ async def test_review_when_retain_fails_succeeds(
         assert data["memory"]["memories_retained"] == 0
 
 
-@pytest.mark.asyncio
-async def test_existing_review_payload_compatibility(
-    async_client,
+def test_existing_review_payload_compatibility(
+    client,
     mock_gemini_review_response
 ):
     """Verify exact backward compatibility: payload without project_id succeeds."""
@@ -181,7 +176,7 @@ async def test_existing_review_payload_compatibility(
          patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=mock_gemini_review_response)):
 
         # Exact legacy payload
-        response = await async_client.post(
+        response = client.post(
             "/review",
             json={
                 "code": "print('hello')",
@@ -197,14 +192,13 @@ async def test_existing_review_payload_compatibility(
         assert len(data["details"]) == 1
 
 
-@pytest.mark.asyncio
-async def test_existing_rewrite_endpoint_preserved(
-    async_client,
+def test_existing_rewrite_endpoint_preserved(
+    client,
     mock_gemini_rewrite_response
 ):
     """Verify that /rewrite endpoint continues working untouched."""
     with patch.object(genai.GenerativeModel, "generate_content_async", AsyncMock(return_value=mock_gemini_rewrite_response)):
-        response = await async_client.post(
+        response = client.post(
             "/rewrite",
             json={
                 "code": "def add(a, b): return a+b",
@@ -220,11 +214,10 @@ async def test_existing_rewrite_endpoint_preserved(
         assert data["metrics"]["time_complexity"] == "O(1)"
 
 
-@pytest.mark.asyncio
-async def test_memory_status_debug_endpoint(async_client):
+def test_memory_status_debug_endpoint(client):
     """Test developer status endpoint."""
     with patch.object(hindsight_service, "check_health", AsyncMock(return_value={"status": "healthy", "version": "0.10.1"})):
-        response = await async_client.get("/memory/status")
+        response = client.get("/memory/status")
         assert response.status_code == 200
         data = response.json()
         assert "hindsight_health" in data
@@ -233,12 +226,11 @@ async def test_memory_status_debug_endpoint(async_client):
         assert data["config"]["gemini_api_key_configured"] is True
 
 
-@pytest.mark.asyncio
-async def test_memory_recall_debug_endpoint(async_client):
+def test_memory_recall_debug_endpoint(client):
     """Test developer recall debug endpoint."""
     mock_mem = [{"id": "m1", "text": "Convention", "category": "convention"}]
     with patch.object(hindsight_service, "recall_memory", AsyncMock(return_value=mock_mem)):
-        response = await async_client.post(
+        response = client.post(
             "/memory/recall-debug",
             json={"query": "test query", "project_id": "test-p"}
         )

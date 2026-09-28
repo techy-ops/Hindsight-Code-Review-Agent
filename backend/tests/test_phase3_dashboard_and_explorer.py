@@ -197,3 +197,103 @@ def test_review_explainability_enrichment_logic():
     assert explain["learned_context_findings_count"] == 1
     assert explain["new_findings_count"] == 1
     assert len(explain["conventions_applied"]) >= 1
+
+
+@pytest.mark.asyncio
+async def test_review_api_returns_explainability_and_tracks_activity(monkeypatch):
+    """Verify POST /review attaches explainability metadata and updates activity tracker."""
+    import main
+
+    async def fake_generate_async(*args, **kwargs):
+        class FakeResponse:
+            text = """{
+                "issues": {"critical": 1, "high": 0, "medium": 0, "low": 0},
+                "details": [
+                    {
+                        "severity": "critical",
+                        "title": "Bypassing Repository Pattern",
+                        "description": "Direct database query executed.",
+                        "suggestion": "Use UserRepository."
+                    }
+                ]
+            }"""
+        return FakeResponse()
+
+    monkeypatch.setattr(main.genai.GenerativeModel, "generate_content_async", fake_generate_async)
+
+    # Mock recall to return repository pattern memory
+    async def fake_recall(*args, **kwargs):
+        return [
+            {
+                "text": "Project convention: Always use repository pattern for DB access.",
+                "category": "convention",
+            }
+        ]
+
+    monkeypatch.setattr(main.hindsight_service, "recall_memory", fake_recall)
+
+    payload = {
+        "code": "def get_user(db, id): return db.execute('SELECT * FROM users WHERE id = :id')",
+        "language": "python",
+        "project_id": "test-repo-service",
+        "developer_id": "dev-alice"
+    }
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.post("/review", json=payload)
+        assert resp.status_code == 200
+        data = resp.json()
+
+        # Check explainability
+        assert "explainability" in data
+        assert data["explainability"]["total_findings"] == 1
+        assert data["explainability"]["learned_context_findings_count"] == 1
+        assert data["details"][0]["origin"] == "learned_context"
+        assert data["details"][0]["influenced_by_memory"] is True
+        assert data["details"][0]["evidence_level"] == "established_convention"
+
+        # Verify activity tracker recorded this review
+        tracker = get_activity_tracker()
+        stats = tracker.get_stats()
+        assert stats["total_reviews"] == 1
+        assert stats["memories_recalled"] == 1
+
+
+@pytest.mark.asyncio
+async def test_hindsight_offline_dashboard_truthful_state(monkeypatch):
+    """Verify /dashboard/stats truthfully reflects when Hindsight is offline."""
+    import main
+
+    async def fake_health_offline():
+        return {
+            "status": "unavailable",
+            "message": "Hindsight server unavailable: ConnectError",
+            "base_url": "http://localhost:8888",
+        }
+
+    monkeypatch.setattr(main.hindsight_service, "check_health", fake_health_offline)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        resp = await ac.get("/dashboard/stats")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["hindsight_health"]["status"] == "unavailable"
+        assert "unavailable" in data["hindsight_health"]["message"]
+
+
+@pytest.mark.asyncio
+async def test_frontend_static_pages_serve_ok():
+    """Verify all frontend HTML pages load successfully without 404 or 500."""
+    pages = [
+        "/",
+        "/developer_dashboard/developer.html",
+        "/review_history/history.html",
+        "/platform_documentation/documentation.html",
+        "/api_documentation/api.html",
+    ]
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        for page in pages:
+            resp = await ac.get(page)
+            assert resp.status_code == 200, f"Page {page} failed to load"
+            assert "html" in resp.headers.get("content-type", "").lower()
+

@@ -355,9 +355,48 @@
                         <span class="material-symbols-outlined text-lg">public</span>
                     </button>
                 </div>
-            </div>
         </footer>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const revEl = document.getElementById("dashTotalReviewsVal");
+            const retEl = document.getElementById("dashMemoriesRetainedVal");
+            const convEl = document.getElementById("dashConventionsVal");
+            const statusEl = document.getElementById("dashHindsightStatus");
+            const reflEl = document.getElementById("dashReflectCount");
+
+            try {
+                const res = await fetch("/dashboard/stats");
+                if (res.ok) {
+                    const data = await res.json();
+                    const stats = data.stats || {};
+                    const health = data.hindsight_health || {};
+
+                    if (revEl) revEl.textContent = String(stats.total_reviews || 0);
+                    if (retEl) retEl.textContent = String(stats.memories_retained || 0);
+                    if (convEl) convEl.textContent = String(stats.learned_conventions_count || 0);
+                    if (reflEl) reflEl.textContent = `${stats.reflections_count || 0} Reflections`;
+
+                    if (statusEl) {
+                        if (health.status === "healthy") {
+                            statusEl.textContent = "Hindsight Connected";
+                            statusEl.parentElement.className = "flex items-center text-emerald-500 text-sm font-bold";
+                        } else if (health.status === "disabled") {
+                            statusEl.textContent = "Hindsight Disabled";
+                            statusEl.parentElement.className = "flex items-center text-slate-400 text-sm font-bold";
+                        } else {
+                            statusEl.textContent = "Hindsight Offline (Fallback Active)";
+                            statusEl.parentElement.className = "flex items-center text-amber-500 text-sm font-bold";
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load dashboard stats:", e);
+                if (statusEl) statusEl.textContent = "Offline (Fallback Active)";
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -51,7 +51,7 @@ def test_end_to_end_memory_lifecycle(client):
         ]
     })
 
-    async def fake_retain(project_id, language, content, metadata=None, tags=None):
+    async def fake_retain(project_id, language, content, metadata=None, tags=None, **kwargs):
         persisted_bank.append({
             "id": f"mem-{len(persisted_bank)+1}",
             "text": content,
@@ -61,7 +61,7 @@ def test_end_to_end_memory_lifecycle(client):
         })
         return True
 
-    async def fake_recall(project_id, query, language=None, limit=None):
+    async def fake_recall(project_id, query, language=None, developer_id=None, limit=None, **kwargs):
         # Return memories matching this project
         return [m for m in persisted_bank if f"project:{project_id}" in m.get("tags", [])]
 

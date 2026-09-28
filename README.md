@@ -92,17 +92,25 @@ AI Code Review & Rewrite Agent helps developers identify **bugs, security vulner
                +-------------------------------------------------+
 ```
 
-### Memory Pipeline: RECALL → USE MEMORY → REVIEW → RETAIN
+### Memory Pipeline: FEEDBACK → RETAIN → REFLECT → LEARN PATTERNS → PERSONALIZED REVIEW
 
-1. **RECALL**: Before reviewing new code, the agent queries Hindsight using the target project ID (`project_id`) and code snippet to retrieve relevant past memories (conventions, previous architectural decisions, and known vulnerability patterns).
-2. **USE MEMORY**: The `MemoryContextBuilder` sanitizes retrieved memories against prompt injection and constructs a concise, structured memory block (`Established Project Conventions`, `Architectural Patterns`, `Previous Vulnerabilities`).
-3. **REVIEW**: Gemini generates the code review with explicit instructions to maintain consistency with established project patterns and flag regressions.
-4. **RETAIN**: High-value findings and suggestions are extracted into normalized, secret-sanitized memory units and asynchronously persisted into Hindsight via `retain()`.
+1. **RECALL**: Queries Hindsight for project memories (`project:{project_id}`) and, if provided, developer-specific memories (`developer:{developer_id}`).
+2. **REFLECT**: When sufficient memories exist (configured threshold, default 2), calls Hindsight's `reflect()` API to synthesize higher-level conventions and team patterns from past reviews and feedback.
+3. **USE MEMORY & CONSTRAINTS**: The `MemoryContextBuilder` injects:
+   - Established Team Conventions & Reflected Syntheses
+   - Negative constraints: `[Team Decisions: REJECTED Suggestions (DO NOT REPEAT)]` to prevent re-proposing rejected patterns
+   - Developer-specific habits and preferred styles
+   - Calibrated confidence wording (distinguishing single observations from established patterns)
+4. **REVIEW**: Gemini evaluates code with full awareness of team conventions and past feedback decisions.
+5. **USER FEEDBACK**: Developers accept, reject, or mark suggestions as fixed in the UI or via API, optionally providing rationale.
+6. **RETAIN & LEARN**: Feedback actions are sanitized and stored back into Hindsight as durable learnings that influence all subsequent reviews.
 
 ### Fallback Behavior When Hindsight is Unavailable
 Hindsight operations are completely non-blocking and fault-tolerant:
 * If Hindsight is unreachable, returns an error, or times out, the review **always succeeds** seamlessly as a standard code review.
-* The frontend clearly and cleanly indicates memory status (`Memory Active`, `First-Time Review`, or `Memory Offline`) without disrupting the developer experience.
+* Reflection errors degrade gracefully back to raw recalled memories without failing the review.
+* Feedback persistence failures are logged non-fatally and never disrupt the review experience.
+* The frontend clearly and cleanly indicates memory status (`Memory Active`, `Reflected Patterns`, `First-Time Review`, or `Memory Offline`).
 
 ---
 
@@ -111,7 +119,7 @@ Hindsight operations are completely non-blocking and fault-tolerant:
 ```text
 AI-code-review-agent/
 ├── frontend/
-│   ├── index.html                 # Main review dashboard with Hindsight memory panel
+│   ├── index.html                 # Review dashboard with feedback actions ([Accept], [Reject], [Mark Fixed])
 │   ├── developer_dashboard/       # Developer management screens
 │   ├── review_history/            # History viewer
 │   ├── api_documentation/         # Interactive documentation
@@ -121,21 +129,25 @@ AI-code-review-agent/
 │   └── pricing/                   # Pricing tier view
 │
 ├── backend/
-│   ├── main.py                    # FastAPI application & review endpoints
-│   ├── config.py                  # Centralized configuration with safe secret masking
-│   ├── hindsight_service.py       # Dedicated Hindsight service abstraction
-│   ├── memory_model.py            # Normalized memory schema, knowledge extraction & secret sanitizer
-│   ├── memory_context_builder.py  # Prompt-injection safe context builder for LLM
+│   ├── main.py                    # FastAPI application, review & feedback endpoints
+│   ├── config.py                  # Configuration with Phase 2 reflection & developer settings
+│   ├── hindsight_service.py       # Hindsight client wrapper (recall, retain, reflect, status)
+│   ├── memory_model.py            # Schemas for memories, feedback, sanitization & confidence calibration
+│   ├── memory_context_builder.py  # Prompt assembly with reflection & rejected suggestion suppression
 │   ├── requirements.txt           # Python dependencies
 │   ├── .env.example               # Environment variable documentation
-│   └── tests/                     # Comprehensive test suite
+│   └── tests/                     # 48 comprehensive unit, integration & E2E tests
 │       ├── conftest.py
 │       ├── test_config.py
 │       ├── test_memory_model.py
 │       ├── test_memory_context_builder.py
 │       ├── test_hindsight_service.py
 │       ├── test_review_api.py
-│       └── test_e2e_memory_flow.py
+│       ├── test_e2e_memory_flow.py
+│       ├── test_feedback.py
+│       ├── test_reflection.py
+│       ├── test_personalization.py
+│       └── test_e2e_learning_workflow.py
 │
 ├── pytest.ini                     # Pytest configuration
 └── README.md
@@ -160,6 +172,12 @@ HINDSIGHT_ENABLED=true
 HINDSIGHT_TIMEOUT=10.0
 HINDSIGHT_MAX_RECALL_RESULTS=5
 DEFAULT_PROJECT_ID=default-project
+
+# Phase 2: Learning, Reflection & Personalization
+HINDSIGHT_REFLECT_ENABLED=true
+HINDSIGHT_REFLECT_BUDGET=low
+HINDSIGHT_MIN_MEMORIES_FOR_REFLECTION=2
+HINDSIGHT_DEVELOPER_MEMORY_ENABLED=true
 ```
 
 | Variable | Description | Default |
@@ -173,6 +191,10 @@ DEFAULT_PROJECT_ID=default-project
 | `HINDSIGHT_TIMEOUT` | Network timeout for Hindsight calls in seconds | `10.0` |
 | `HINDSIGHT_MAX_RECALL_RESULTS` | Max memory items injected per review | `5` |
 | `DEFAULT_PROJECT_ID` | Default project scope identifier | `default-project` |
+| `HINDSIGHT_REFLECT_ENABLED` | Enable Hindsight `reflect()` synthesis | `true` |
+| `HINDSIGHT_REFLECT_BUDGET` | Reflection compute budget (`low`, `mid`, `high`) | `low` |
+| `HINDSIGHT_MIN_MEMORIES_FOR_REFLECTION` | Minimum memories before invoking reflection | `2` |
+| `HINDSIGHT_DEVELOPER_MEMORY_ENABLED` | Scope developer-specific habits when `developer_id` provided | `true` |
 
 ---
 

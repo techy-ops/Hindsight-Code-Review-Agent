@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import hashlib
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -41,9 +42,27 @@ app.add_middleware(
 
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
 
-api_key = settings.gemini_api_key
-if api_key:
-    genai.configure(api_key=api_key)
+# NOTE: genai.configure() is intentionally NOT called here at module level.
+# It is called inside get_gemini_model() on every use so that a fresh Uvicorn
+# process always picks up the current key from .env — eliminating stale-key 403s.
+
+def get_gemini_model() -> genai.GenerativeModel:
+    """Return a configured GenerativeModel using the current settings.
+
+    Calling genai.configure() here (rather than at module import time) ensures
+    that each Uvicorn startup always uses the key present in .env at launch time
+    and is never affected by a stale module-level global from a previous process.
+    """
+    current_settings = get_settings()
+    current_key = current_settings.gemini_api_key
+    if not current_key:
+        raise HTTPException(
+            status_code=500,
+            detail="GEMINI_API_KEY is not set. Add it to backend/.env and restart the server.",
+        )
+    genai.configure(api_key=current_key)
+    return genai.GenerativeModel(current_settings.gemini_model)
+
 
 hindsight_service = get_hindsight_service()
 
@@ -323,7 +342,7 @@ async def get_demo_scenarios():
 
 @app.post("/review")
 async def review_code(request: CodeRequest):
-    if not api_key:
+    if not settings.gemini_api_key:
         raise HTTPException(
             status_code=500,
             detail="GEMINI_API_KEY environment variable is not set. Please set it or add a .env file to the backend directory."
@@ -434,8 +453,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
     data = None
     for attempt in range(4):
         try:
-            model_name = settings.gemini_model
-            model = genai.GenerativeModel(model_name)
+            model = get_gemini_model()
             response = await model.generate_content_async(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
@@ -552,7 +570,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
 
 @app.post("/rewrite")
 async def rewrite_code(request: CodeRequest):
-    if not api_key:
+    if not settings.gemini_api_key:
         raise HTTPException(
             status_code=500,
             detail="GEMINI_API_KEY environment variable is not set. Please set it or add a .env file to the backend directory."
@@ -584,8 +602,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
 """
     for attempt in range(4):
         try:
-            model_name = settings.gemini_model
-            model = genai.GenerativeModel(model_name)
+            model = get_gemini_model()
             response = await model.generate_content_async(
                 prompt,
                 generation_config=genai.types.GenerationConfig(

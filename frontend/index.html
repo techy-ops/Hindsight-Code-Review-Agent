@@ -119,14 +119,21 @@
                             <span class="material-symbols-outlined text-primary">code</span>
                             <h3 class="font-bold text-lg">Input Editor</h3>
                         </div>
-                        <select id="languageSelect"
-                            class="bg-surface-dark border-border-dark text-slate-100 text-sm rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 font-mono">
-                            <option value="python">Python</option>
-                            <option value="javascript">JavaScript</option>
-                            <option value="typescript">TypeScript</option>
-                            <option value="rust">Rust</option>
-                            <option value="go">Go</option>
-                        </select>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-1.5 bg-surface-dark border border-border-dark rounded-lg px-2.5 py-1 text-xs" title="Project scope for Hindsight persistent memory">
+                                <span class="material-symbols-outlined text-purple-400 text-sm">folder_open</span>
+                                <input id="projectIdInput" type="text" value="default-project" placeholder="Project ID"
+                                    class="bg-transparent text-slate-200 text-xs font-mono border-none focus:ring-0 p-0 w-28 placeholder:text-slate-500" />
+                            </div>
+                            <select id="languageSelect"
+                                class="bg-surface-dark border-border-dark text-slate-100 text-sm rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 font-mono">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="typescript">TypeScript</option>
+                                <option value="rust">Rust</option>
+                                <option value="go">Go</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="relative bg-[#0d0712] rounded-lg border border-border-dark p-4 overflow-hidden">
                         <textarea id="codeInput"
@@ -258,8 +265,50 @@ print(calculate_total(data))</textarea>
                 </div>
             </div>
         </div>
+        <!-- Hindsight Persistent Memory Section -->
+        <section id="hindsightSection" class="mt-10">
+            <div class="glass p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-4 border-b border-purple-500/20">
+                    <div class="flex items-center gap-3">
+                        <div class="size-10 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-purple-400 text-xl">psychology</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-base text-white">Hindsight Persistent Memory</h4>
+                                <span id="hindsightBadge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 uppercase tracking-wider">Learning Layer</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Recall &rarr; Use Memory &rarr; Review &rarr; Retain across code revisions</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
+                            <span class="text-slate-400">Scope:</span>
+                            <span id="memoryScopeVal" class="text-purple-300 font-bold">default-project</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
+                            <span class="text-slate-400">Recalled:</span>
+                            <span id="memoryCountVal" class="text-green-400 font-bold">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
+                            <span class="text-slate-400">Retained:</span>
+                            <span id="memoryRetainedVal" class="text-blue-400 font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Memory Content Preview -->
+                <div id="memoryContentContainer" class="space-y-2">
+                    <div class="text-xs text-slate-400 italic flex items-center gap-2 py-2">
+                        <span class="material-symbols-outlined text-sm text-slate-500">info</span>
+                        Click <strong>Analyze Code</strong> to recall and apply persistent project memory.
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Issues List -->
-        <section class="mt-12">
+        <section class="mt-10">
             <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
                 <span class="material-symbols-outlined text-primary">list_alt</span>
                 Detailed Analysis
@@ -314,10 +363,20 @@ print(calculate_total(data))</textarea>
             const memoryUsageVal = document.getElementById("memoryUsageVal");
             const issuesList = document.getElementById("issuesList");
 
+            const projectIdInput = document.getElementById("projectIdInput");
+            const hindsightBadge = document.getElementById("hindsightBadge");
+            const memoryScopeVal = document.getElementById("memoryScopeVal");
+            const memoryCountVal = document.getElementById("memoryCountVal");
+            const memoryRetainedVal = document.getElementById("memoryRetainedVal");
+            const memoryContentContainer = document.getElementById("memoryContentContainer");
+
             btnAnalyze.addEventListener("click", async () => {
                 const originalText = btnAnalyze.innerHTML;
                 btnAnalyze.innerHTML = `<span class="material-symbols-outlined animate-spin text-white">progress_activity</span> Analyzing...`;
                 btnAnalyze.disabled = true;
+
+                const currentProject = (projectIdInput && projectIdInput.value.trim()) || "default-project";
+                if (memoryScopeVal) memoryScopeVal.textContent = currentProject;
 
                 try {
                     const response = await fetch("/review", {
@@ -325,7 +384,8 @@ print(calculate_total(data))</textarea>
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             code: codeInput.value,
-                            language: languageSelect.value
+                            language: languageSelect.value,
+                            project_id: currentProject
                         })
                     });
 
@@ -337,6 +397,56 @@ print(calculate_total(data))</textarea>
                         countHigh.textContent = String(data.issues.high).padStart(2, '0');
                         countMedium.textContent = String(data.issues.medium).padStart(2, '0');
                         countLow.textContent = String(data.issues.low).padStart(2, '0');
+
+                        // Update Hindsight Memory Panel
+                        if (data.memory) {
+                            const mem = data.memory;
+                            memoryScopeVal.textContent = mem.project_id || currentProject;
+                            memoryCountVal.textContent = String(mem.memories_retrieved || 0);
+                            memoryRetainedVal.textContent = String(mem.memories_retained || 0);
+
+                            if (mem.status === "recalled") {
+                                hindsightBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400 uppercase tracking-wider";
+                                hindsightBadge.textContent = "Memory Active & Influencing Review";
+                                
+                                let memHtml = `<div class="text-xs text-green-300 font-semibold mb-2 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm">verified</span>
+                                    ${mem.memories_retrieved} historical memory item(s) influenced this review:
+                                </div>`;
+                                (mem.memories_used || []).forEach(m => {
+                                    memHtml += `
+                                    <div class="p-3 rounded-lg bg-surface-dark/90 border border-purple-500/20 text-xs flex items-start gap-2.5">
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-purple-500/20 text-purple-300 mt-0.5">${m.category || 'observation'}</span>
+                                        <p class="text-slate-300 flex-1">${m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                                    </div>`;
+                                });
+                                memoryContentContainer.innerHTML = memHtml;
+                            } else if (mem.status === "no_memories") {
+                                hindsightBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 uppercase tracking-wider";
+                                hindsightBadge.textContent = "First-Time Review";
+                                memoryContentContainer.innerHTML = `
+                                    <div class="text-xs text-cyan-300/90 flex items-center gap-2 py-2">
+                                        <span class="material-symbols-outlined text-sm text-cyan-400">new_releases</span>
+                                        No relevant historical memory found &mdash; first-time review. Findings from this review have been retained in Hindsight for future consistency.
+                                    </div>`;
+                            } else if (mem.status === "unavailable") {
+                                hindsightBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 uppercase tracking-wider";
+                                hindsightBadge.textContent = "Memory Offline";
+                                memoryContentContainer.innerHTML = `
+                                    <div class="text-xs text-amber-300/80 flex items-center gap-2 py-2">
+                                        <span class="material-symbols-outlined text-sm text-amber-400">cloud_off</span>
+                                        Hindsight memory service is currently unavailable. Standard AI review completed successfully.
+                                    </div>`;
+                            } else {
+                                hindsightBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 uppercase tracking-wider";
+                                hindsightBadge.textContent = "Fallback Active";
+                                memoryContentContainer.innerHTML = `
+                                    <div class="text-xs text-slate-400 flex items-center gap-2 py-2">
+                                        <span class="material-symbols-outlined text-sm text-amber-400">warning</span>
+                                        Memory layer experienced a fallback. Standard code review completed without errors.
+                                    </div>`;
+                            }
+                        }
 
                         // Update Detailed Issues List
                         issuesList.innerHTML = "";

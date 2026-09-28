@@ -9,15 +9,19 @@ AI Code Review & Rewrite Agent helps developers identify **bugs, security vulner
 ## ✨ Features
 
 * 🧠 **Hindsight Persistent Memory** — Retains project-level coding conventions and architectural patterns across reviews
-* 🔄 **Recall → Review → Retain Pipeline** — Contextually recalls prior learnings to evaluate new code revisions
+* 🔄 **Feedback → Retain → Reflect → Review Pipeline** — Learns from developer feedback (accept, reject, resolve) and synthesizes high-level conventions
+* 👤 **Developer & Team Memory Isolation** — Tracks developer-specific habits while scoping shared team conventions without cross-project contamination
+* 🪞 **Hindsight Reflection Engine** — Leverages Hindsight's `reflect()` API to synthesize durable conventions from recurring patterns
+* 🚫 **Negative Feedback Suppression** — Prevents repeatedly proposing recommendations previously rejected by the team for project-specific reasons
+* ⚖️ **Calibrated Confidence Wording** — Distinguishes between isolated observations, repeated patterns, and established conventions
 * 🛡️ **Secret & Token Sanitization** — Automatically redacts API keys, passwords, and tokens before retention
 * 🔍 **AI Code Review** — Analyze code and receive intelligent feedback powered by Gemini 2.5 Flash
 * 🐛 **Bug & Vulnerability Detection** — Identify logical errors, security flaws, and performance bottlenecks
 * ⚡ **Performance Optimization** — Find inefficient algorithms and suggest optimized implementations
 * ✍️ **AI Code Rewrite** — Generate cleaner, secure, and idiomatic code with diff breakdown
 * 🌐 **Multi-Language Support** — Review Python, JavaScript, TypeScript, Rust, and Go
-* 📊 **Developer Dashboard** — Interactive code review interface with memory visibility
-* 🛡️ **Graceful Degradation** — Always functions as a standard review agent even if memory services are offline
+* 📊 **Developer Dashboard** — Interactive code review interface with memory visibility and feedback actions (Accept, Reject, Mark Fixed)
+* 🛡️ **Graceful Degradation** — Always functions as a standard review agent even if memory services or reflection are offline
 
 ---
 
@@ -25,7 +29,7 @@ AI Code Review & Rewrite Agent helps developers identify **bugs, security vulner
 
 * **Frontend:** HTML5 • TailwindCSS • Modern Vanilla JavaScript • Glassmorphism UI
 * **Backend:** Python 3.12 • FastAPI • Pydantic v2 • Uvicorn
-* **Agent Memory:** [Hindsight](https://github.com/vectorize-io/hindsight) (`hindsight-client`)
+* **Agent Memory:** [Hindsight](https://github.com/vectorize-io/hindsight) (`hindsight-client` with `arecall`, `aretain`, `areflect`)
 * **AI Engine:** Google Gemini API (`gemini-2.5-flash`)
 * **Testing:** Pytest • Pytest-Asyncio • HTTPX
 

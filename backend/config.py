@@ -46,7 +46,21 @@ class Settings(BaseModel):
         default_factory=lambda: int(os.getenv("HINDSIGHT_MAX_RECALL_RESULTS", "5"))
     )
 
-    # Scoping default
+    # Phase 2: Reflection and Personalization settings
+    hindsight_reflect_enabled: bool = Field(
+        default_factory=lambda: os.getenv("HINDSIGHT_REFLECT_ENABLED", "true").lower() in ("true", "1", "yes")
+    )
+    hindsight_reflect_budget: str = Field(
+        default_factory=lambda: os.getenv("HINDSIGHT_REFLECT_BUDGET", "low")
+    )
+    hindsight_min_memories_for_reflection: int = Field(
+        default_factory=lambda: int(os.getenv("HINDSIGHT_MIN_MEMORIES_FOR_REFLECTION", "2"))
+    )
+    hindsight_developer_memory_enabled: bool = Field(
+        default_factory=lambda: os.getenv("HINDSIGHT_DEVELOPER_MEMORY_ENABLED", "true").lower() in ("true", "1", "yes")
+    )
+
+    # Scoping defaults
     default_project_id: str = Field(
         default_factory=lambda: os.getenv("DEFAULT_PROJECT_ID", "default-project")
     )
@@ -66,6 +80,10 @@ class Settings(BaseModel):
             "hindsight_api_key_configured": bool(self.hindsight_api_key),
             "hindsight_timeout": self.hindsight_timeout,
             "hindsight_max_recall_results": self.hindsight_max_recall_results,
+            "hindsight_reflect_enabled": self.hindsight_reflect_enabled,
+            "hindsight_reflect_budget": self.hindsight_reflect_budget,
+            "hindsight_min_memories_for_reflection": self.hindsight_min_memories_for_reflection,
+            "hindsight_developer_memory_enabled": self.hindsight_developer_memory_enabled,
             "default_project_id": self.default_project_id,
         }
 

@@ -67,6 +67,21 @@ def get_gemini_model() -> genai.GenerativeModel:
 hindsight_service = get_hindsight_service()
 
 
+@app.on_event("startup")
+async def _log_startup_fingerprint():
+    """Log safe Gemini key fingerprint at startup so stale-key issues are immediately visible."""
+    key = settings.gemini_api_key
+    if key:
+        sha = hashlib.sha256(key.encode()).hexdigest()[:12]
+        prefix = key[:6] + "..." if len(key) >= 6 else "(too short)"
+        logger.info(
+            "Gemini API key loaded: length=%d prefix=%s sha256[:12]=%s model=%s",
+            len(key), prefix, sha, settings.gemini_model,
+        )
+    else:
+        logger.warning("WARNING: GEMINI_API_KEY is not set. /review and /rewrite will return 500.")
+
+
 class CodeRequest(BaseModel):
     code: str
     language: str

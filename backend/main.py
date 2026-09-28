@@ -11,7 +11,7 @@ import google.generativeai as genai
 
 from config import get_settings
 from hindsight_service import get_hindsight_service
-from memory_model import extract_durable_knowledge, sanitize_text
+from memory_model import extract_durable_knowledge, sanitize_text, FeedbackRequest
 from memory_context_builder import build_memory_context
 
 # Configure structured logging
@@ -25,8 +25,8 @@ settings = get_settings()
 
 app = FastAPI(
     title="AI Code Review & Rewrite Agent (Hindsight-Powered)",
-    description="Intelligent code review agent featuring persistent memory via Hindsight.",
-    version="1.0.0"
+    description="Intelligent code review agent featuring persistent memory, learning from feedback, and reflection via Hindsight.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -53,12 +53,23 @@ class CodeRequest(BaseModel):
         default="default-project",
         description="Project or repository identifier for memory scoping"
     )
+    developer_id: Optional[str] = Field(
+        default=None,
+        description="Optional developer identifier for personalized review learning"
+    )
 
 
 class RecallDebugRequest(BaseModel):
     query: str
     project_id: Optional[str] = "default-project"
+    developer_id: Optional[str] = None
     language: Optional[str] = None
+
+
+class ReflectDebugRequest(BaseModel):
+    project_id: Optional[str] = "default-project"
+    developer_id: Optional[str] = None
+    query: Optional[str] = "What are the primary coding conventions and rejected suggestions?"
 
 
 @app.get("/memory/status")
@@ -80,17 +91,68 @@ async def recall_debug(request: RecallDebugRequest):
         project_id=project_id,
         query=request.query,
         language=request.language,
+        developer_id=request.developer_id,
     )
     context_preview = build_memory_context(
         memories=memories,
         project_id=project_id,
-        language=request.language
+        language=request.language,
+        developer_id=request.developer_id,
     )
     return {
         "project_id": project_id,
+        "developer_id": request.developer_id,
         "memories_count": len(memories),
         "memories": memories,
         "formatted_context": context_preview,
+    }
+
+
+@app.post("/memory/reflect")
+async def reflect_debug(request: ReflectDebugRequest):
+    """Developer/inspection endpoint to trigger Hindsight reflect() and return synthesized patterns."""
+    project_id = request.project_id or settings.default_project_id
+    reflection = await hindsight_service.reflect_memory(
+        project_id=project_id,
+        query=request.query or "Synthesize team conventions and rejected patterns",
+        developer_id=request.developer_id,
+    )
+    return {
+        "project_id": project_id,
+        "developer_id": request.developer_id,
+        "reflection": reflection,
+    }
+
+
+@app.post("/review/feedback")
+async def submit_feedback(feedback: FeedbackRequest):
+    """Submit developer feedback on a review suggestion (accept, reject, or mark fixed).
+    
+    Persists feedback as durable Hindsight memory to influence future reviews.
+    """
+    project_id = feedback.project_id or settings.default_project_id
+    retained = False
+
+    if settings.hindsight_enabled:
+        try:
+            retained = await hindsight_service.retain_feedback(feedback)
+            logger.info(
+                "Feedback recorded for project '%s' (action: %s, retained: %s)",
+                project_id,
+                feedback.action,
+                retained,
+            )
+        except Exception as e:
+            logger.warning("Feedback retention failed: %s (non-fatal)", type(e).__name__)
+            retained = False
+
+    return {
+        "status": "recorded",
+        "action": feedback.action,
+        "retained": retained,
+        "project_id": project_id,
+        "developer_id": feedback.developer_id,
+        "issue_title": feedback.issue_title,
     }
 
 
@@ -103,12 +165,14 @@ async def review_code(request: CodeRequest):
         )
 
     project_id = request.project_id or settings.default_project_id
+    developer_id = request.developer_id
 
     # ---------------------------------------------------------
-    # STEP 1: RECALL - Retrieve relevant project memory from Hindsight
+    # STEP 1: RECALL - Retrieve relevant project & developer memory
     # ---------------------------------------------------------
     memories: List[Dict[str, Any]] = []
     memory_status = "unavailable"
+    reflection_data = None
     memory_context_prompt = ""
 
     if settings.hindsight_enabled:
@@ -117,13 +181,39 @@ async def review_code(request: CodeRequest):
                 project_id=project_id,
                 query=request.code,
                 language=request.language,
+                developer_id=developer_id,
             )
             if memories:
                 memory_status = "recalled"
+
+                # ---------------------------------------------------------
+                # STEP 2: REFLECT - Synthesize higher-order patterns when useful
+                # ---------------------------------------------------------
+                if (
+                    settings.hindsight_reflect_enabled
+                    and len(memories) >= settings.hindsight_min_memories_for_reflection
+                ):
+                    try:
+                        reflection_query = (
+                            f"What are the established team conventions, accepted practices, "
+                            f"and rejected suggestions for {request.language} code in project '{project_id}'?"
+                        )
+                        reflection_data = await hindsight_service.reflect_memory(
+                            project_id=project_id,
+                            query=reflection_query,
+                            developer_id=developer_id,
+                        )
+                    except Exception as ref_err:
+                        logger.warning("Hindsight reflection error: %s (continuing with recall)", type(ref_err).__name__)
+                        reflection_data = None
+
+                # Build combined LLM prompt context
                 memory_context_prompt = build_memory_context(
                     memories=memories,
                     project_id=project_id,
-                    language=request.language
+                    language=request.language,
+                    developer_id=developer_id,
+                    reflection=reflection_data,
                 )
             else:
                 memory_status = "no_memories"
@@ -133,18 +223,20 @@ async def review_code(request: CodeRequest):
             memories = []
 
     # ---------------------------------------------------------
-    # STEP 2: BUILD REVIEW PROMPT - Inject retrieved memory context
+    # STEP 3: BUILD REVIEW PROMPT - Inject retrieved memory context
     # ---------------------------------------------------------
     memory_instructions = ""
     if memory_context_prompt:
         memory_instructions = f"""
 {memory_context_prompt}
 
-CRITICAL MEMORY INSTRUCTIONS:
-- You have access to persistent historical memories from prior reviews of project '{project_id}'.
-- Maintain consistency with the established architectural patterns and project conventions listed above.
-- If the code violates, bypasses, or contradicts an established pattern or convention from memory, EXPLICITLY flag this in your review details with severity matching its importance.
-- If this code adheres to an established project convention, acknowledge and reinforce it.
+CRITICAL PERSONALIZATION & MEMORY INSTRUCTIONS:
+- You have access to persistent historical memories and team decisions from prior reviews.
+- DO NOT suggest recommendations that the team has explicitly REJECTED in the memory context above.
+- Maintain consistency with established architectural patterns and reinforced project conventions.
+- If code violates or contradicts an established pattern from memory, EXPLICITLY flag this and cite the project convention.
+- Acknowledge developer-preferred patterns when applicable.
+- Where evidence is an isolated observation, use cautious phrasing (e.g. 'Prior reviews noted...') rather than asserting an absolute rule.
 """
 
     prompt = f"""You are an expert code reviewer. Analyze the following {request.language} code for vulnerabilities, bugs, and performance issues.
@@ -172,7 +264,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
 """
 
     # ---------------------------------------------------------
-    # STEP 3: REVIEW - LLM generation with resilience / retry loop
+    # STEP 4: REVIEW - LLM generation with resilience / retry loop
     # ---------------------------------------------------------
     data = None
     for attempt in range(4):
@@ -204,7 +296,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
         raise HTTPException(status_code=500, detail="Invalid response format received from LLM")
 
     # ---------------------------------------------------------
-    # STEP 4: RETAIN - Extract and persist durable knowledge into Hindsight
+    # STEP 5: RETAIN - Extract and persist durable knowledge into Hindsight
     # ---------------------------------------------------------
     retained_count = 0
     if settings.hindsight_enabled:
@@ -214,6 +306,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
                 language=request.language,
                 review_output=data,
                 project_id=project_id,
+                developer_id=developer_id,
             )
             if durable_records:
                 retained_count = await hindsight_service.retain_knowledge_records(durable_records)
@@ -222,7 +315,7 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
             retained_count = 0
 
     # ---------------------------------------------------------
-    # STEP 5: ATTACH BACKWARD-COMPATIBLE MEMORY METADATA
+    # STEP 6: ATTACH BACKWARD-COMPATIBLE MEMORY METADATA
     # ---------------------------------------------------------
     memories_summary = []
     for m in memories[:5]:
@@ -234,8 +327,11 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
     data["memory"] = {
         "status": memory_status,
         "project_id": project_id,
+        "developer_id": developer_id,
         "memories_retrieved": len(memories),
         "memories_used": memories_summary,
+        "reflection_applied": bool(reflection_data and reflection_data.get("text")),
+        "reflection_summary": reflection_data.get("text") if reflection_data else None,
         "learning_context_applied": bool(memory_context_prompt),
         "memories_retained": retained_count,
     }

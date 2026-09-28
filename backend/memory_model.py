@@ -1,14 +1,15 @@
 """Memory model and knowledge extraction module for Hindsight-powered Code Review Agent.
 
 Responsible for:
-- Defining normalized memory schemas
+- Defining normalized memory schemas and feedback models (Phase 2)
 - Sanitizing sensitive information (secrets, keys, tokens, passwords)
-- Extracting high-value durable knowledge from code reviews for Hindsight retention
+- Extracting high-value durable knowledge from code reviews and developer feedback for Hindsight retention
+- Calibrating memory confidence and cautious evidence phrasing
 """
 
 import re
-from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from typing import List, Dict, Any, Optional, Literal
+from pydantic import BaseModel, Field, field_validator
 
 
 # Regular expressions for detecting and redacting secrets
@@ -43,8 +44,9 @@ class MemoryRecord(BaseModel):
     """Normalized memory record structure."""
     id: Optional[str] = None
     project_id: str
+    developer_id: Optional[str] = None
     language: str
-    category: str = Field(description="convention | vulnerability | performance | architecture | recommendation")
+    category: str = Field(description="convention | vulnerability | performance | architecture | recommendation | rejected_recommendation | resolution")
     title: str
     content: str
     reasoning: Optional[str] = None
@@ -52,20 +54,126 @@ class MemoryRecord(BaseModel):
     tags: List[str] = Field(default_factory=list)
 
 
+class FeedbackRequest(BaseModel):
+    """Developer feedback payload for accepting, rejecting, or marking review items as fixed."""
+    project_id: str = "default-project"
+    developer_id: Optional[str] = None
+    issue_title: str
+    recommendation: str
+    action: Literal["accept", "reject", "fixed"]
+    reason: Optional[str] = None
+    language: Optional[str] = "python"
+    code_context: Optional[str] = None
+
+    @field_validator("action")
+    @classmethod
+    def validate_action(cls, v: str) -> str:
+        cleaned = v.strip().lower()
+        if cleaned not in ("accept", "reject", "fixed"):
+            raise ValueError("action must be one of: 'accept', 'reject', 'fixed'")
+        return cleaned
+
+
+def calibrate_confidence_wording(
+    text: str,
+    frequency: int = 1,
+    is_explicit_convention: bool = False
+) -> str:
+    """Calibrate confidence phrasing so weak evidence is not overstated as an absolute team rule."""
+    cleaned = sanitize_text(text).strip()
+    if is_explicit_convention or frequency >= 4:
+        prefix = "Established team convention:"
+    elif frequency >= 2:
+        prefix = "Frequent project pattern:"
+    else:
+        prefix = "Observed in prior review:"
+    
+    # Avoid duplicate prefixes
+    if any(cleaned.lower().startswith(p) for p in ["established", "frequent", "observed", "project"]):
+        return cleaned
+    return f"{prefix} {cleaned}"
+
+
+def create_feedback_memory_record(feedback: FeedbackRequest) -> MemoryRecord:
+    """Transform developer review feedback into a durable, sanitized MemoryRecord for Hindsight."""
+    project_id = sanitize_text(feedback.project_id or "default-project")
+    developer_id = sanitize_text(feedback.developer_id or "").strip() or None
+    title = sanitize_text(feedback.issue_title)
+    rec = sanitize_text(feedback.recommendation)
+    reason = sanitize_text(feedback.reason or "").strip()
+    lang = (feedback.language or "code").lower()
+    dev_suffix = f" (by developer '{developer_id}')" if developer_id else ""
+
+    tags = [
+        f"project:{project_id}",
+        f"action:{feedback.action}",
+        f"lang:{lang}",
+    ]
+    if developer_id:
+        tags.append(f"developer:{developer_id}")
+
+    if feedback.action == "reject":
+        category = "rejected_recommendation"
+        reason_text = reason or "Team decided against this suggestion for project architecture."
+        content = (
+            f"Project '{project_id}' team decision [REJECTED]: Suggestion '{rec}' for issue '{title}' was REJECTED{dev_suffix}. "
+            f"Reason: {reason_text}. "
+            f"Policy: Do NOT suggest '{rec}' in project '{project_id}' unless compelling context demands it."
+        )
+        tags.append("category:rejected_recommendation")
+    elif feedback.action == "accept":
+        category = "convention"
+        reason_text = reason or "Approved and adopted as standard practice."
+        content = (
+            f"Project '{project_id}' team convention [ACCEPTED]: Suggestion '{rec}' for issue '{title}' was ACCEPTED{dev_suffix}. "
+            f"Context: {reason_text}. "
+            f"Standard: Reinforce '{rec}' in project '{project_id}'."
+        )
+        tags.append("category:convention")
+    else:  # fixed
+        category = "resolution"
+        reason_text = reason or "Resolved adhering to project standard."
+        content = (
+            f"Project '{project_id}' issue resolution [FIXED]: '{title}' was RESOLVED{dev_suffix} following guideline: '{rec}'. "
+            f"Details: {reason_text}."
+        )
+        tags.append("category:resolution")
+
+    return MemoryRecord(
+        project_id=project_id,
+        developer_id=developer_id,
+        language=lang,
+        category=category,
+        title=f"Feedback [{feedback.action.upper()}]: {title}",
+        content=content,
+        reasoning=reason,
+        metadata={
+            "action": feedback.action,
+            "category": category,
+            "project_id": project_id,
+            "developer_id": developer_id or "",
+            "language": lang,
+            "issue_title": title,
+            "recommendation": rec,
+        },
+        tags=tags,
+    )
+
+
 def extract_durable_knowledge(
     code: str,
     language: str,
     review_output: Dict[str, Any],
-    project_id: str = "default-project"
+    project_id: str = "default-project",
+    developer_id: Optional[str] = None
 ) -> List[MemoryRecord]:
     """Extract durable, reusable knowledge units from code review output.
     
     Rather than dumping raw reviews, extracts clear architectural rules,
     conventions, security patterns, and recommendations that will benefit
-    future reviews of this project.
+    future reviews of this project and developer.
     """
     memories: List[MemoryRecord] = []
-    sanitized_code = sanitize_text(code[:1000])  # limit sample context
     details = review_output.get("details", [])
 
     if not isinstance(details, list):
@@ -98,15 +206,24 @@ def extract_durable_knowledge(
         else:
             category = "recommendation"
 
-        # Construct clear, declarative knowledge statement for Hindsight
         memory_statement = (
             f"Project '{project_id}' ({language}) finding: {title}. "
             f"Context: {description} "
             f"Standard/Recommendation: {suggestion}"
         ).strip()
 
+        tags = [
+            f"project:{project_id}",
+            f"lang:{language.lower()}",
+            f"category:{category}",
+            f"severity:{severity}",
+        ]
+        if developer_id:
+            tags.append(f"developer:{developer_id}")
+
         record = MemoryRecord(
             project_id=project_id,
+            developer_id=developer_id,
             language=language.lower(),
             category=category,
             title=title,
@@ -116,14 +233,10 @@ def extract_durable_knowledge(
                 "severity": severity,
                 "category": category,
                 "project_id": project_id,
+                "developer_id": developer_id or "",
                 "language": language.lower(),
             },
-            tags=[
-                f"project:{project_id}",
-                f"lang:{language.lower()}",
-                f"category:{category}",
-                f"severity:{severity}",
-            ]
+            tags=tags,
         )
         memories.append(record)
 

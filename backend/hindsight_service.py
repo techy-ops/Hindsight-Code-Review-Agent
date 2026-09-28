@@ -3,8 +3,9 @@
 Provides a clean, centralized abstraction over the Hindsight Python SDK.
 Handles:
 - Memory Bank creation / resolution per project (isolation scoping)
-- Knowledge retention (retain_memory)
-- Contextual recall (recall_memory)
+- Knowledge retention (retain_memory, retain_feedback)
+- Contextual recall (recall_memory with project and developer scoping)
+- Reflection synthesis (reflect_memory) using Hindsight areflect()
 - Graceful degradation when Hindsight is unavailable or encounters errors
 - Safe logging without credentials or sensitive data
 """
@@ -14,7 +15,7 @@ import re
 from typing import List, Dict, Any, Optional
 from hindsight_client import Hindsight
 from config import Settings, get_settings
-from memory_model import sanitize_text, MemoryRecord
+from memory_model import sanitize_text, MemoryRecord, FeedbackRequest, create_feedback_memory_record
 
 logger = logging.getLogger("hindsight_service")
 
@@ -121,10 +122,12 @@ class HindsightService:
         project_id: str = "default-project",
         query: str = "",
         language: Optional[str] = None,
+        developer_id: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Recall relevant historical memories for a given project and query.
         
+        Optionally scopes to developer-specific memories when developer_id is provided.
         Fails gracefully to an empty list on any network/server failure.
         """
         if not self.config.hindsight_enabled:
@@ -145,6 +148,8 @@ class HindsightService:
         tags = [f"project:{project_id}"]
         if language:
             tags.append(f"lang:{language.lower()}")
+        if developer_id and self.config.hindsight_developer_memory_enabled:
+            tags.append(f"developer:{developer_id}")
 
         try:
             response = await client.arecall(
@@ -185,8 +190,9 @@ class HindsightService:
                     continue
 
             logger.info(
-                "Hindsight recall succeeded for project '%s': %d memories retrieved",
+                "Hindsight recall succeeded for project '%s' (dev: %s): %d memories retrieved",
                 project_id,
+                developer_id or "none",
                 len(results),
             )
             return results[:limit]
@@ -198,6 +204,75 @@ class HindsightService:
                 type(e).__name__,
             )
             return []
+
+    async def reflect_memory(
+        self,
+        project_id: str,
+        query: str,
+        developer_id: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Synthesize higher-level project, team, and developer patterns using Hindsight reflect().
+        
+        Returns dict with reflection text, facts it was based on, and metadata,
+        or None on failure or when disabled.
+        """
+        if not self.config.hindsight_enabled or not self.config.hindsight_reflect_enabled:
+            return None
+
+        client = self._get_client()
+        if not client:
+            return None
+
+        bank_id = self.resolve_bank_id(project_id)
+        merged_tags = [f"project:{project_id}"]
+        if developer_id and self.config.hindsight_developer_memory_enabled:
+            merged_tags.append(f"developer:{developer_id}")
+        if tags:
+            merged_tags.extend(tags)
+        merged_tags = list(dict.fromkeys(merged_tags))
+
+        try:
+            response = await client.areflect(
+                bank_id=bank_id,
+                query=query,
+                tags=merged_tags,
+                tags_match="any",
+                budget=self.config.hindsight_reflect_budget,
+            )
+            text = getattr(response, "text", "") or ""
+            if not text and isinstance(response, dict):
+                text = response.get("text", "")
+
+            if not text:
+                return None
+
+            based_on_facts: List[str] = []
+            raw_facts = getattr(response, "based_on", []) or []
+            for f in raw_facts:
+                fact_text = getattr(f, "text", "") if hasattr(f, "text") else (f.get("text", "") if isinstance(f, dict) else str(f))
+                if fact_text:
+                    based_on_facts.append(fact_text)
+
+            logger.info(
+                "Hindsight reflection succeeded for project '%s' (dev: %s, %d facts)",
+                project_id,
+                developer_id or "none",
+                len(based_on_facts),
+            )
+            return {
+                "text": text,
+                "based_on": based_on_facts,
+                "project_id": project_id,
+                "developer_id": developer_id,
+            }
+        except Exception as e:
+            logger.warning(
+                "Hindsight reflection failed for project '%s' (%s): continuing without reflection",
+                project_id,
+                type(e).__name__,
+            )
+            return None
 
     async def retain_memory(
         self,
@@ -282,10 +357,15 @@ class HindsightService:
                 retained_count += 1
         return retained_count
 
-    async def reflect_memory(self, project_id: str, query: str) -> None:
-        """Placeholder for Phase 2: Reflect operation for higher-order reasoning."""
-        raise NotImplementedError(
-            "Hindsight 'reflect' operation is scheduled for Phase 2 of the Hindsight integration."
+    async def retain_feedback(self, feedback: FeedbackRequest) -> bool:
+        """Persist review feedback (accept/reject/fixed) into Hindsight durable memory."""
+        record = create_feedback_memory_record(feedback)
+        return await self.retain_memory(
+            project_id=record.project_id,
+            language=record.language,
+            content=record.content,
+            metadata=record.metadata,
+            tags=record.tags,
         )
 
     async def close(self) -> None:

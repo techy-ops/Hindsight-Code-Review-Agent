@@ -244,27 +244,28 @@ uvicorn main:app --reload
 
 ## 🧪 Running Tests
 
-Execute the comprehensive test suite covering unit tests, contract preservation, failure fallbacks, and the end-to-end memory lifecycle:
+Execute the comprehensive test suite covering unit tests, contract preservation, failure fallbacks, developer & team memory isolation, reflection, negative feedback suppression, and the complete end-to-end learning lifecycle:
 
 ```bash
 pytest backend/tests -v
 ```
 
-All 29 tests run with fast deterministic mocks and require no active cloud credentials.
+All 48 tests run with fast deterministic mocks and require no active cloud credentials.
 
 ---
 
 ## 📡 API Reference
 
 ### `POST /review`
-Analyze source code with Hindsight memory awareness.
+Analyze source code with Hindsight memory awareness, reflection synthesis, and developer personalization.
 
 **Request:**
 ```json
 {
   "code": "def get_user(db, id): return db.execute('SELECT * FROM users WHERE id = ' + id)",
   "language": "python",
-  "project_id": "auth-service"
+  "project_id": "auth-service",
+  "developer_id": "dev-alice"
 }
 ```
 
@@ -288,7 +289,8 @@ Analyze source code with Hindsight memory awareness.
   "memory": {
     "status": "recalled",
     "project_id": "auth-service",
-    "memories_retrieved": 1,
+    "developer_id": "dev-alice",
+    "memories_retrieved": 2,
     "memories_used": [
       {
         "text": "Project 'auth-service' convention: Always use repository pattern and parameterized SQL.",
@@ -296,8 +298,62 @@ Analyze source code with Hindsight memory awareness.
       }
     ],
     "learning_context_applied": true,
+    "reflection_applied": true,
+    "reflection_summary": "Project strongly prefers repository-based database access and parameterized SQL queries.",
+    "rejected_rules_count": 1,
     "memories_retained": 1
   }
+}
+```
+
+### `POST /review/feedback`
+Submit developer feedback on a specific review issue or recommendation to persist durable team learning.
+
+**Request:**
+```json
+{
+  "project_id": "auth-service",
+  "developer_id": "dev-alice",
+  "action": "reject",
+  "issue_title": "Cache with Redis",
+  "suggestion": "Use Redis distributed caching for session lookups.",
+  "reason": "Project uses PostgreSQL UNLOGGED tables for caching, Redis is not permitted in our stack."
+}
+```
+
+**Response:**
+```json
+{
+  "status": "retained",
+  "feedback_id": "fb_669f6e696ca74fc2",
+  "action": "reject",
+  "project_id": "auth-service",
+  "developer_id": "dev-alice",
+  "retained": true,
+  "message": "Feedback recorded: reject for 'Cache with Redis'"
+}
+```
+
+### `POST /memory/reflect`
+Synthesize higher-level team conventions and coding patterns from accumulated memories using Hindsight's reflection engine.
+
+**Request:**
+```json
+{
+  "project_id": "auth-service",
+  "developer_id": "dev-alice",
+  "query": "coding conventions, architecture, and caching practices"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "reflected",
+  "project_id": "auth-service",
+  "developer_id": "dev-alice",
+  "summary": "Team consistently rejects Redis caching in favor of PostgreSQL unlogged tables, and enforces repository pattern for all database access.",
+  "facts_count": 2
 }
 ```
 

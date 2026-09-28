@@ -1,55 +1,59 @@
 # 🤖 AI Code Review & Rewrite Agent
 
-An AI-powered developer tool that analyzes source code, detects bugs, security vulnerabilities, and performance issues, and generates optimized code using **Google Gemini AI**.
+> **An AI-powered developer tool that reviews, detects, and improves source code using Google Gemini AI.**
 
-This project helps developers quickly review and improve their code with automated suggestions.
+AI Code Review & Rewrite Agent helps developers identify **bugs, security vulnerabilities, performance issues, and code-quality problems**, while also generating optimized code automatically.
 
----
+## ✨ Features
 
-## 🚀 Features
+* 🔍 **AI Code Review** — Analyze code and receive intelligent feedback
+* 🐛 **Bug Detection** — Identify logical errors and potential code issues
+* 🔐 **Security Analysis** — Detect insecure coding patterns
+* ⚡ **Performance Optimization** — Find inefficient code and optimization opportunities
+* 🧠 **AI Code Rewrite** — Generate cleaner and optimized code
+* 🌐 **Multi-Language Support** — Review code across multiple programming languages
+* 📊 **Developer Dashboard** — Centralized code review interface
+* 📜 **Review History** — Track previous code analyses
+* 📚 **API Documentation** — Interactive FastAPI documentation
 
-- 🔍 AI-powered code analysis
-- ⚡ Automatic code optimization
-- 🧠 Detects bugs, security issues, and performance problems
-- 💻 Supports multiple programming languages
-- 📊 Developer dashboard
-- 📜 Code review history
-- 📚 API documentation interface
+## 🛠️ Tech Stack
 
----
+**Frontend:** HTML • TailwindCSS • JavaScript • Stitch
 
-## 🏗 Tech Stack
+**Backend:** Python • FastAPI
 
-**Frontend**
-- HTML
-- TailwindCSS
-- JavaScript
-- Stitch (UI design)
+**AI:** Google Gemini API
 
-**Backend**
-- Python
-- FastAPI
+## 🏗️ Architecture
 
-**AI**
-- Google Gemini API
-
----
+```text
+Developer
+    ↓
+Frontend
+    ↓
+FastAPI Backend
+    ↓
+Gemini AI
+    ↓
+Code Analysis / Rewrite
+    ↓
+Improved Code + Insights
+```
 
 ## 📁 Project Structure
 
-```
-AI-code-review-agent
-│
-├── frontend
+```text
+AI-code-review-agent/
+├── frontend/
 │   ├── index.html
-│   ├── developer_dashboard
-│   ├── review_history
-│   ├── api_documentation
-│   ├── platform_documentation
-│   ├── login
-│   └── create_account
+│   ├── developer_dashboard/
+│   ├── review_history/
+│   ├── api_documentation/
+│   ├── platform_documentation/
+│   ├── login/
+│   └── create_account/
 │
-├── backend
+├── backend/
 │   ├── main.py
 │   ├── ai_service.py
 │   ├── requirements.txt
@@ -58,70 +62,55 @@ AI-code-review-agent
 └── README.md
 ```
 
----
+## 🚀 Run Locally
 
-## ⚙️ Setup & Run Locally
-
-### 1️⃣ Clone Repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/techy-ops/AI-code-review-agent.git
 cd AI-code-review-agent
 ```
 
-### 2️⃣ Install Backend Dependencies
+### 2. Install Dependencies
 
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Add Gemini API Key
+### 3. Configure Gemini
 
-Create a `.env` file inside the **backend** folder:
+Create `backend/.env`:
 
-```
+```env
 GEMINI_API_KEY=your_api_key_here
 ```
 
-Get your API key from:  
-https://aistudio.google.com/app/apikey
+Get your API key from Google AI Studio.
 
----
-
-### 4️⃣ Run Backend Server
+### 4. Start Server
 
 ```bash
 uvicorn main:app --reload
 ```
 
-Server runs at:
+Backend:
 
-```
+```text
 http://127.0.0.1:8000
 ```
 
----
+API Docs:
 
-### 5️⃣ Open Frontend
-
-Open the frontend file in a browser:
-
-```
-frontend/index.html
+```text
+http://127.0.0.1:8000/docs
 ```
 
----
+## 📡 API
 
-## 📡 API Endpoints
+### `POST /review`
 
-**Code Review**
-
-```
-POST /review
-```
-
-Request example:
+Analyze source code.
 
 ```json
 {
@@ -130,19 +119,13 @@ Request example:
 }
 ```
 
----
+### `POST /rewrite`
 
-**Code Optimization**
+Generate an optimized version of the submitted code.
 
-```
-POST /rewrite
-```
+## 🧪 Example
 
-Returns an improved and optimized version of the code.
-
----
-
-## 🧪 Example Test Code
+**Input:**
 
 ```python
 def calculate_sum(numbers):
@@ -152,17 +135,27 @@ def calculate_sum(numbers):
     return total
 ```
 
-The AI will suggest improvements and optimized code.
+**AI-Optimized Output:**
 
----
+```python
+def calculate_sum(numbers):
+    return sum(numbers)
+```
+
+## 🔮 Future Scope
+
+* GitHub & Pull Request integration
+* Code quality scoring
+* Persistent review history
+* Real-time code editor
+* Advanced vulnerability detection
+* Performance benchmarking
+* Docker & cloud deployment
 
 ## 👨‍💻 Author
 
 **Krishna Keerthana**
 
-GitHub  
-https://github.com/techy-ops
+[GitHub](https://github.com/techy-ops)
 
 ---
-
-⭐ If you like this project, consider giving it a star!

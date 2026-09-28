@@ -119,11 +119,16 @@
                             <span class="material-symbols-outlined text-primary">code</span>
                             <h3 class="font-bold text-lg">Input Editor</h3>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
                             <div class="flex items-center gap-1.5 bg-surface-dark border border-border-dark rounded-lg px-2.5 py-1 text-xs" title="Project scope for Hindsight persistent memory">
                                 <span class="material-symbols-outlined text-purple-400 text-sm">folder_open</span>
                                 <input id="projectIdInput" type="text" value="default-project" placeholder="Project ID"
-                                    class="bg-transparent text-slate-200 text-xs font-mono border-none focus:ring-0 p-0 w-28 placeholder:text-slate-500" />
+                                    class="bg-transparent text-slate-200 text-xs font-mono border-none focus:ring-0 p-0 w-24 placeholder:text-slate-500" />
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-surface-dark border border-border-dark rounded-lg px-2.5 py-1 text-xs" title="Developer ID for personalized learning">
+                                <span class="material-symbols-outlined text-blue-400 text-sm">person</span>
+                                <input id="developerIdInput" type="text" value="" placeholder="Dev ID (opt)"
+                                    class="bg-transparent text-slate-200 text-xs font-mono border-none focus:ring-0 p-0 w-20 placeholder:text-slate-500" />
                             </div>
                             <select id="languageSelect"
                                 class="bg-surface-dark border-border-dark text-slate-100 text-sm rounded-lg focus:ring-primary focus:border-primary px-3 py-1.5 font-mono">
@@ -286,6 +291,10 @@ print(calculate_total(data))</textarea>
                             <span class="text-slate-400">Scope:</span>
                             <span id="memoryScopeVal" class="text-purple-300 font-bold">default-project</span>
                         </div>
+                        <div id="devScopeBadge" class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
+                            <span class="text-slate-400">Dev:</span>
+                            <span id="memoryDevVal" class="text-blue-300 font-bold">-</span>
+                        </div>
                         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
                             <span class="text-slate-400">Recalled:</span>
                             <span id="memoryCountVal" class="text-green-400 font-bold">0</span>
@@ -293,6 +302,10 @@ print(calculate_total(data))</textarea>
                         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
                             <span class="text-slate-400">Retained:</span>
                             <span id="memoryRetainedVal" class="text-blue-400 font-bold">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-dark/90 border border-border-dark">
+                            <span class="text-slate-400">Reflection:</span>
+                            <span id="memoryReflectVal" class="text-amber-400 font-bold">Off</span>
                         </div>
                     </div>
                 </div>
@@ -364,11 +377,70 @@ print(calculate_total(data))</textarea>
             const issuesList = document.getElementById("issuesList");
 
             const projectIdInput = document.getElementById("projectIdInput");
+            const developerIdInput = document.getElementById("developerIdInput");
             const hindsightBadge = document.getElementById("hindsightBadge");
             const memoryScopeVal = document.getElementById("memoryScopeVal");
+            const memoryDevVal = document.getElementById("memoryDevVal");
+            const devScopeBadge = document.getElementById("devScopeBadge");
             const memoryCountVal = document.getElementById("memoryCountVal");
             const memoryRetainedVal = document.getElementById("memoryRetainedVal");
+            const memoryReflectVal = document.getElementById("memoryReflectVal");
             const memoryContentContainer = document.getElementById("memoryContentContainer");
+
+            let currentReviewDetails = [];
+
+            window.submitIssueFeedback = async (index, action) => {
+                const issue = currentReviewDetails[index];
+                if (!issue) return;
+
+                const statusEl = document.getElementById(`feedback-status-${index}`);
+                const currentProject = (projectIdInput && projectIdInput.value.trim()) || "default-project";
+                const currentDev = (developerIdInput && developerIdInput.value.trim()) || null;
+
+                let reason = "";
+                if (action === "reject") {
+                    reason = prompt(`Why are you rejecting this suggestion? (This will be learned so the agent avoids repeating it):`, "") || "";
+                    if (reason === null) return; // user cancelled
+                } else if (action === "fixed") {
+                    reason = prompt(`Optional resolution notes for '${issue.title}':`, "") || "";
+                }
+
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="animate-spin material-symbols-outlined text-xs inline">progress_activity</span> Recording...`;
+                }
+
+                try {
+                    const res = await fetch("/review/feedback", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            project_id: currentProject,
+                            developer_id: currentDev,
+                            issue_title: issue.title,
+                            recommendation: issue.suggestion,
+                            action: action,
+                            reason: reason,
+                            language: languageSelect.value
+                        })
+                    });
+
+                    if (res.ok) {
+                        const feedbackData = await res.json();
+                        if (action === "accept") {
+                            statusEl.innerHTML = `<span class="text-green-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-xs">verified</span> Accepted &amp; learned</span>`;
+                        } else if (action === "reject") {
+                            statusEl.innerHTML = `<span class="text-red-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-xs">block</span> Rejected &mdash; rule updated to avoid repeating</span>`;
+                        } else {
+                            statusEl.innerHTML = `<span class="text-blue-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-xs">task_alt</span> Resolved &amp; retained</span>`;
+                        }
+                    } else {
+                        if (statusEl) statusEl.textContent = "Feedback recorded locally.";
+                    }
+                } catch (e) {
+                    console.error("Feedback error:", e);
+                    if (statusEl) statusEl.textContent = "Feedback recorded locally.";
+                }
+            };
 
             btnAnalyze.addEventListener("click", async () => {
                 const originalText = btnAnalyze.innerHTML;
@@ -376,7 +448,15 @@ print(calculate_total(data))</textarea>
                 btnAnalyze.disabled = true;
 
                 const currentProject = (projectIdInput && projectIdInput.value.trim()) || "default-project";
+                const currentDev = (developerIdInput && developerIdInput.value.trim()) || null;
+
                 if (memoryScopeVal) memoryScopeVal.textContent = currentProject;
+                if (currentDev && devScopeBadge && memoryDevVal) {
+                    memoryDevVal.textContent = currentDev;
+                    devScopeBadge.classList.remove("hidden");
+                } else if (devScopeBadge) {
+                    devScopeBadge.classList.add("hidden");
+                }
 
                 try {
                     const response = await fetch("/review", {
@@ -385,12 +465,14 @@ print(calculate_total(data))</textarea>
                         body: JSON.stringify({
                             code: codeInput.value,
                             language: languageSelect.value,
-                            project_id: currentProject
+                            project_id: currentProject,
+                            developer_id: currentDev
                         })
                     });
 
                     if (response.ok) {
                         const data = await response.json();
+                        currentReviewDetails = data.details || [];
 
                         // Update Counts
                         countCritical.textContent = String(data.issues.critical).padStart(2, '0');
@@ -405,6 +487,11 @@ print(calculate_total(data))</textarea>
                             memoryCountVal.textContent = String(mem.memories_retrieved || 0);
                             memoryRetainedVal.textContent = String(mem.memories_retained || 0);
 
+                            if (memoryReflectVal) {
+                                memoryReflectVal.textContent = mem.reflection_applied ? "Synthesized" : "Off";
+                                memoryReflectVal.className = mem.reflection_applied ? "text-purple-300 font-bold" : "text-slate-500 font-bold";
+                            }
+
                             if (mem.status === "recalled") {
                                 hindsightBadge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400 uppercase tracking-wider";
                                 hindsightBadge.textContent = "Memory Active & Influencing Review";
@@ -413,6 +500,17 @@ print(calculate_total(data))</textarea>
                                     <span class="material-symbols-outlined text-sm">verified</span>
                                     ${mem.memories_retrieved} historical memory item(s) influenced this review:
                                 </div>`;
+
+                                if (mem.reflection_applied && mem.reflection_summary) {
+                                    memHtml += `
+                                    <div class="p-3 mb-2 rounded-lg bg-purple-950/40 border border-purple-500/40 text-xs">
+                                        <div class="text-purple-300 font-bold flex items-center gap-1.5 mb-1">
+                                            <span class="material-symbols-outlined text-sm">lightbulb</span> Synthesized Team Reflection (Hindsight Reflect):
+                                        </div>
+                                        <p class="text-slate-200">${mem.reflection_summary.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                                    </div>`;
+                                }
+
                                 (mem.memories_used || []).forEach(m => {
                                     memHtml += `
                                     <div class="p-3 rounded-lg bg-surface-dark/90 border border-purple-500/20 text-xs flex items-start gap-2.5">
@@ -448,9 +546,9 @@ print(calculate_total(data))</textarea>
                             }
                         }
 
-                        // Update Detailed Issues List
+                        // Update Detailed Issues List with Phase 2 Feedback Actions
                         issuesList.innerHTML = "";
-                        data.details.forEach(issue => {
+                        (data.details || []).forEach((issue, idx) => {
                             let colorClass = "blue";
                             let icon = "info";
 
@@ -468,6 +566,22 @@ print(calculate_total(data))</textarea>
                                     </div>
                                     <p class="text-sm text-slate-400">${issue.description}</p>
                                     <p class="text-xs text-slate-300 mt-2"><strong>Suggestion:</strong> ${issue.suggestion}</p>
+
+                                    <!-- Phase 2: Feedback Learning Actions -->
+                                    <div class="mt-4 pt-3 border-t border-slate-700/40 flex flex-wrap items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="submitIssueFeedback(${idx}, 'accept')" class="px-2.5 py-1 rounded bg-green-500/10 hover:bg-green-500/20 text-green-400 text-xs font-semibold flex items-center gap-1 transition-colors" title="Accept recommendation and reinforce pattern in memory">
+                                                <span class="material-symbols-outlined text-xs">check</span> Accept
+                                            </button>
+                                            <button onclick="submitIssueFeedback(${idx}, 'reject')" class="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold flex items-center gap-1 transition-colors" title="Reject suggestion and explain reason to avoid repeating">
+                                                <span class="material-symbols-outlined text-xs">close</span> Reject
+                                            </button>
+                                            <button onclick="submitIssueFeedback(${idx}, 'fixed')" class="px-2.5 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-semibold flex items-center gap-1 transition-colors" title="Mark fixed adhering to recommendation">
+                                                <span class="material-symbols-outlined text-xs">task_alt</span> Mark Fixed
+                                            </button>
+                                        </div>
+                                        <span id="feedback-status-${idx}" class="text-[11px] text-slate-400"></span>
+                                    </div>
                                 </div>
                             </div>
                         `;

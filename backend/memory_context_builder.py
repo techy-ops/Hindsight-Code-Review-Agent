@@ -199,3 +199,118 @@ def build_memory_context(
         result = result[:MAX_TOTAL_CONTEXT_CHARS] + "\n... [Context truncated for length]\n=== END HISTORICAL PROJECT MEMORY ==="
 
     return result
+
+
+def enrich_review_explainability(
+    details: List[Dict[str, Any]],
+    memories: Optional[List[Any]] = None,
+    reflection: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Analyze review issues against recalled memories and reflection to generate truthful explainability data.
+    
+    Distinguishes:
+    - NEW FINDING vs LEARNED CONTEXT
+    - Citations to specific historical conventions or team decisions
+    - Level of evidence confidence (established convention, repeated pattern, isolated observation)
+    """
+    mem_list = memories or []
+    ref_text = (reflection.get("text", "") if isinstance(reflection, dict) else "").lower()
+    
+    # Extract memory tokens/phrases
+    memory_entries = []
+    for m in mem_list:
+        txt = ""
+        cat = "observation"
+        if isinstance(m, dict):
+            txt = m.get("text") or m.get("content") or ""
+            cat = m.get("category", "observation")
+        elif hasattr(m, "text"):
+            txt = getattr(m, "text", "")
+            cat = getattr(m, "category", "observation")
+        if txt:
+            memory_entries.append({"text": txt, "category": cat, "lower": txt.lower()})
+
+    enriched_details = []
+    conventions_applied = []
+    learned_count = 0
+
+    for issue in details:
+        title = (issue.get("title") or "").strip()
+        desc = (issue.get("description") or "").strip()
+        sugg = (issue.get("suggestion") or "").strip()
+        combined = f"{title} {desc} {sugg}".lower()
+
+        matched_memory = None
+        evidence_level = "none"
+
+        # Check against reflection first (highest synthesized authority)
+        if ref_text:
+            words = [w for w in re.findall(r"\w{4,}", title.lower()) if w not in ("with", "this", "from", "that", "code", "file", "line")]
+            if words and any(w in ref_text for w in words):
+                matched_memory = reflection.get("text", "")[:200]
+                evidence_level = "established_convention"
+            elif any(k in combined and k in ref_text for k in ("repository", "redis", "memcached", "cache", "sql", "naming", "async", "lock")):
+                matched_memory = reflection.get("text", "")[:200]
+                evidence_level = "established_convention"
+
+        # Check against recalled memories
+        if not matched_memory:
+            for mem in memory_entries:
+                mem_low = mem["lower"]
+                words = [w for w in re.findall(r"\w{4,}", title.lower()) if w not in ("with", "this", "from", "that", "code", "file", "line")]
+                if (words and any(w in mem_low for w in words)) or (
+                    any(k in combined and k in mem_low for k in ("repository", "redis", "memcached", "cache", "sql", "unlogged", "naming", "pattern", "parameterized"))
+                ):
+                    matched_memory = mem["text"]
+                    cat = str(mem["category"]).lower()
+                    if cat in ("convention", "architecture"):
+                        evidence_level = "established_convention"
+                    elif cat in ("rejected_pattern", "rejected_recommendation", "accepted_pattern"):
+                        evidence_level = "repeated_pattern"
+                    else:
+                        evidence_level = "isolated_observation"
+                    break
+
+        if matched_memory:
+            origin = "learned_context"
+            influenced = True
+            learned_count += 1
+            why_it_matters = (
+                f"Aligns with project's established conventions ({matched_memory[:100]}...)"
+                if len(matched_memory) > 100 else f"Aligns with project memory: {matched_memory}"
+            )
+            if matched_memory not in conventions_applied:
+                conventions_applied.append(matched_memory)
+        else:
+            origin = "new_finding"
+            influenced = False
+            evidence_level = "none"
+            why_it_matters = desc or "Identified during static code analysis to prevent runtime defects."
+
+        enriched_issue = dict(issue)
+        enriched_issue["origin"] = origin
+        enriched_issue["influenced_by_memory"] = influenced
+        enriched_issue["relevant_memory"] = matched_memory
+        enriched_issue["evidence_level"] = evidence_level
+        enriched_issue["why_it_matters"] = why_it_matters
+        enriched_details.append(enriched_issue)
+
+    explainability_summary = (
+        f"{learned_count} finding(s) were influenced by historical project conventions and prior reviews; "
+        f"{len(details) - learned_count} finding(s) were newly detected."
+        if learned_count > 0
+        else "All findings in this review were detected directly from static analysis (no prior conventions directly matched)."
+    )
+
+    return {
+        "details": enriched_details,
+        "explainability": {
+            "summary": explainability_summary,
+            "total_findings": len(details),
+            "new_findings_count": len(details) - learned_count,
+            "learned_context_findings_count": learned_count,
+            "conventions_applied": conventions_applied[:5],
+            "reflection_applied": bool(ref_text),
+        }
+    }
+

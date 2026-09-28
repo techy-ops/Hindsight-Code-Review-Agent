@@ -356,7 +356,285 @@ print(calculate_total(data))</textarea>
             <div id="issuesList" class="space-y-4">
                 <!-- Dynamic Issues injected here -->
             </div>
-        </section>
+        </div>
+        <!-- END VIEW 1: Review Workspace -->
+
+        <!-- VIEW 2: Learning & Memory Dashboard -->
+        <div id="viewDashboard" class="tab-view hidden space-y-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-3xl">insights</span>
+                        Learning &amp; Memory Dashboard
+                    </h3>
+                    <p class="text-sm text-slate-400 mt-1">Real-time persistent memory metrics, feedback counts, and Hindsight connectivity.</p>
+                </div>
+                <button onclick="loadDashboardStats()" class="px-4 py-2 text-xs font-bold rounded-lg bg-surface-dark border border-primary/40 hover:bg-primary/20 text-white flex items-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-sm">refresh</span> Refresh Stats
+                </button>
+            </div>
+
+            <!-- Hindsight Connection Status Card -->
+            <div class="glass p-6 rounded-xl border border-primary/30 bg-primary/5">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-4 border-b border-border-dark">
+                    <div class="flex items-center gap-3">
+                        <div class="size-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-xl">hub</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-base text-white">Hindsight Persistent Memory Service</h4>
+                                <span id="dashHindsightStatusBadge" class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-green-500/20 text-green-400 uppercase tracking-wider">Checking...</span>
+                            </div>
+                            <p id="dashHindsightMessage" class="text-xs text-slate-400">Connecting to persistent memory bank...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+                    <div class="p-3 rounded-lg bg-surface-dark/80 border border-border-dark">
+                        <span class="text-slate-400 block text-[10px] uppercase font-bold mb-1">Base URL</span>
+                        <span id="dashHindsightBaseUrl" class="text-slate-200 truncate block">http://localhost:8888</span>
+                    </div>
+                    <div class="p-3 rounded-lg bg-surface-dark/80 border border-border-dark">
+                        <span class="text-slate-400 block text-[10px] uppercase font-bold mb-1">Bank Identifier</span>
+                        <span id="dashHindsightBankId" class="text-purple-300 font-bold truncate block">code-review-agent</span>
+                    </div>
+                    <div class="p-3 rounded-lg bg-surface-dark/80 border border-border-dark">
+                        <span class="text-slate-400 block text-[10px] uppercase font-bold mb-1">Server Version</span>
+                        <span id="dashHindsightVersion" class="text-blue-300 font-bold truncate block">Connected</span>
+                    </div>
+                    <div class="p-3 rounded-lg bg-surface-dark/80 border border-border-dark">
+                        <span class="text-slate-400 block text-[10px] uppercase font-bold mb-1">Reflection Synthesis</span>
+                        <span id="dashHindsightReflect" class="text-amber-300 font-bold truncate block">Enabled (budget: low)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real Stats Metric Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass p-6 rounded-xl border-l-4 border-primary">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">Total Code Reviews</p>
+                    <h4 id="dashTotalReviews" class="text-4xl font-black text-white">0</h4>
+                    <p class="text-xs text-slate-400 mt-2">Executed across code revisions</p>
+                </div>
+                <div class="glass p-6 rounded-xl border-l-4 border-blue-500">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">Memories Retained</p>
+                    <h4 id="dashMemoriesRetained" class="text-4xl font-black text-blue-400">0</h4>
+                    <p class="text-xs text-slate-400 mt-2">Durable knowledge units persisted</p>
+                </div>
+                <div class="glass p-6 rounded-xl border-l-4 border-green-500">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">Memories Recalled</p>
+                    <h4 id="dashMemoriesRecalled" class="text-4xl font-black text-green-400">0</h4>
+                    <p class="text-xs text-slate-400 mt-2">Applied to guide code reviews</p>
+                </div>
+                <div class="glass p-6 rounded-xl border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between mb-1">
+                        <p class="text-xs text-slate-400 font-bold uppercase">Feedback Events</p>
+                        <span id="dashFeedbackTotal" class="text-xs font-bold text-amber-400">0 Total</span>
+                    </div>
+                    <div class="flex items-center gap-3 mt-3">
+                        <div class="flex-1 p-2 rounded bg-surface-dark border border-border-dark text-center">
+                            <span class="text-[10px] text-green-400 block font-bold">Accepted</span>
+                            <span id="dashFeedbackAccepted" class="text-sm font-bold text-white">0</span>
+                        </div>
+                        <div class="flex-1 p-2 rounded bg-surface-dark border border-border-dark text-center">
+                            <span class="text-[10px] text-red-400 block font-bold">Rejected</span>
+                            <span id="dashFeedbackRejected" class="text-sm font-bold text-white">0</span>
+                        </div>
+                        <div class="flex-1 p-2 rounded bg-surface-dark border border-border-dark text-center">
+                            <span class="text-[10px] text-blue-400 block font-bold">Fixed</span>
+                            <span id="dashFeedbackFixed" class="text-sm font-bold text-white">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-xl border-l-4 border-purple-500">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">Learned Conventions</p>
+                    <h4 id="dashConventionsCount" class="text-4xl font-black text-purple-400">0</h4>
+                    <p class="text-xs text-slate-400 mt-2">Reinforced architectural &amp; style rules</p>
+                </div>
+                <div class="glass p-6 rounded-xl border-l-4 border-pink-500">
+                    <p class="text-xs text-slate-400 font-bold uppercase mb-1">Reflections Synthesized</p>
+                    <h4 id="dashReflectionsCount" class="text-4xl font-black text-pink-400">0</h4>
+                    <p class="text-xs text-slate-400 mt-2">Higher-order pattern syntheses</p>
+                </div>
+            </div>
+
+            <!-- Truthful Metrics Notice -->
+            <div class="p-4 rounded-xl bg-surface-dark/70 border border-border-dark flex items-start gap-3 text-xs text-slate-400">
+                <span class="material-symbols-outlined text-purple-400 mt-0.5">verified_user</span>
+                <div>
+                    <strong class="text-slate-200">Truthful Data Guarantee:</strong>
+                    All dashboard metrics originate genuinely from actual reviews and Hindsight memory bank storage. No numbers or statistics are simulated.
+                </div>
+            </div>
+        </div>
+        <!-- END VIEW 2 -->
+
+        <!-- VIEW 3: Memory Explorer -->
+        <div id="viewExplorer" class="tab-view hidden space-y-6">
+            <div>
+                <h3 class="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-3xl">travel_explore</span>
+                    Persistent Memory Explorer
+                </h3>
+                <p class="text-sm text-slate-400 mt-1">Search, filter, and audit learned conventions and durable knowledge units.</p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="glass p-5 rounded-xl border border-primary/20 flex flex-wrap items-center gap-3">
+                <div class="flex-1 min-w-[200px]">
+                    <input id="explorerSearchInput" type="text" placeholder="Search memory text or keywords..."
+                        class="w-full bg-surface-dark border border-border-dark text-slate-100 text-xs rounded-lg px-3 py-2 focus:ring-primary focus:border-primary" />
+                </div>
+                <div class="w-36">
+                    <input id="explorerProjectInput" type="text" placeholder="Project ID" value="default-project"
+                        class="w-full bg-surface-dark border border-border-dark text-slate-100 text-xs rounded-lg px-3 py-2 focus:ring-primary focus:border-primary font-mono" />
+                </div>
+                <div class="w-36">
+                    <select id="explorerCategorySelect"
+                        class="w-full bg-surface-dark border border-border-dark text-slate-100 text-xs rounded-lg px-3 py-2 focus:ring-primary focus:border-primary">
+                        <option value="all">All Categories</option>
+                        <option value="convention">Conventions</option>
+                        <option value="rejected_pattern">Rejected Patterns</option>
+                        <option value="accepted_pattern">Accepted Patterns</option>
+                        <option value="architecture">Architecture</option>
+                        <option value="vulnerability">Vulnerability</option>
+                        <option value="observation">Observations</option>
+                    </select>
+                </div>
+                <div class="w-36">
+                    <select id="explorerSourceSelect"
+                        class="w-full bg-surface-dark border border-border-dark text-slate-100 text-xs rounded-lg px-3 py-2 focus:ring-primary focus:border-primary">
+                        <option value="all">All Sources</option>
+                        <option value="hindsight_bank">Hindsight Bank</option>
+                        <option value="developer_feedback">Developer Feedback</option>
+                        <option value="review_finding">Review Finding</option>
+                        <option value="reflection">Reflection</option>
+                    </select>
+                </div>
+                <button onclick="loadMemoryExplorer()" class="px-4 py-2 text-xs font-bold rounded-lg code-gradient text-white flex items-center gap-1.5 shadow-md">
+                    <span class="material-symbols-outlined text-sm">filter_alt</span> Filter
+                </button>
+            </div>
+
+            <!-- Explorer Records Container -->
+            <div id="explorerRecordsContainer" class="space-y-3">
+                <div class="glass p-8 rounded-xl text-center text-slate-400 text-xs italic">
+                    Loading memory explorer...
+                </div>
+            </div>
+        </div>
+        <!-- END VIEW 3 -->
+
+        <!-- VIEW 4: Learning Timeline -->
+        <div id="viewTimeline" class="tab-view hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-3xl">timeline</span>
+                        Learning Evolution Timeline
+                    </h3>
+                    <p class="text-sm text-slate-400 mt-1">Chronological evolution: Reviews &rarr; Developer Feedback &rarr; Memory Retention &rarr; Reflection &rarr; Personalized Reviews.</p>
+                </div>
+                <button onclick="loadLearningTimeline()" class="px-4 py-2 text-xs font-bold rounded-lg bg-surface-dark border border-primary/40 hover:bg-primary/20 text-white flex items-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-sm">refresh</span> Refresh Timeline
+                </button>
+            </div>
+
+            <!-- Timeline List -->
+            <div id="timelineContainer" class="space-y-4">
+                <div class="glass p-8 rounded-xl text-center text-slate-400 text-xs italic">
+                    Loading timeline...
+                </div>
+            </div>
+        </div>
+        <!-- END VIEW 4 -->
+
+        <!-- VIEW 5: Before / After Demo -->
+        <div id="viewDemo" class="tab-view hidden space-y-8">
+            <div>
+                <h3 class="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-3xl">play_circle</span>
+                    Before / After Learning Demo
+                </h3>
+                <p class="text-sm text-slate-400 mt-1">Demonstrates real feedback learning: The agent proposes a pattern, developer rejects it with a reason, and future reviews adapt seamlessly.</p>
+            </div>
+
+            <!-- Scenario Selection -->
+            <div class="flex flex-wrap items-center gap-3">
+                <button id="btnDemoScenarioCaching" onclick="selectDemoScenario('caching_convention')"
+                    class="px-4 py-2 rounded-lg text-xs font-bold border border-primary/40 code-gradient text-white flex items-center gap-2 shadow-md">
+                    <span class="material-symbols-outlined text-sm">cached</span> Scenario 1: Caching Convention (Redis vs PostgreSQL)
+                </button>
+                <button id="btnDemoScenarioRepo" onclick="selectDemoScenario('repository_pattern')"
+                    class="px-4 py-2 rounded-lg text-xs font-bold border border-border-dark bg-surface-dark text-slate-300 hover:text-white flex items-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined text-sm">dataset</span> Scenario 2: Architectural Pattern (Repository Pattern)
+                </button>
+            </div>
+
+            <!-- Stepper Container -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Step 1 -->
+                <div class="glass p-6 rounded-xl border border-primary/30 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-purple-300 uppercase tracking-wider">Step 1</span>
+                            <span id="demoStep1Status" class="text-xs text-slate-400">Ready</span>
+                        </div>
+                        <h4 class="font-bold text-base text-white mb-1">Baseline Review</h4>
+                        <p class="text-xs text-slate-400 mb-4">Run initial review on unoptimized code without prior feedback memory.</p>
+                    </div>
+                    <button id="btnRunDemoStep1" onclick="runDemoStep1()" class="w-full py-2.5 px-4 rounded-lg bg-surface-dark border border-primary/40 hover:bg-primary/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                        <span class="material-symbols-outlined text-sm">play_arrow</span> Run Initial Review
+                    </button>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="glass p-6 rounded-xl border border-primary/30 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 uppercase tracking-wider">Step 2</span>
+                            <span id="demoStep2Status" class="text-xs text-slate-400">Pending Step 1</span>
+                        </div>
+                        <h4 class="font-bold text-base text-white mb-1">Developer Feedback</h4>
+                        <p class="text-xs text-slate-400 mb-4">Reject the suggestion with specific project rationale and retain into Hindsight.</p>
+                    </div>
+                    <button id="btnRunDemoStep2" onclick="runDemoStep2()" disabled class="w-full py-2.5 px-4 rounded-lg bg-surface-dark/50 border border-slate-700 text-slate-500 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-not-allowed">
+                        <span class="material-symbols-outlined text-sm">thumb_down</span> Submit Rejection Feedback
+                    </button>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="glass p-6 rounded-xl border border-primary/30 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-300 uppercase tracking-wider">Step 3</span>
+                            <span id="demoStep3Status" class="text-xs text-slate-400">Pending Step 2</span>
+                        </div>
+                        <h4 class="font-bold text-base text-white mb-1">Personalized Review</h4>
+                        <p class="text-xs text-slate-400 mb-4">Review modified code; verify agent suppresses rejected advice and enforces learned convention.</p>
+                    </div>
+                    <button id="btnRunDemoStep3" onclick="runDemoStep3()" disabled class="w-full py-2.5 px-4 rounded-lg bg-surface-dark/50 border border-slate-700 text-slate-500 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-not-allowed">
+                        <span class="material-symbols-outlined text-sm">verified</span> Run Second Review
+                    </button>
+                </div>
+            </div>
+
+            <!-- Demo Live Log / Audit Output -->
+            <div class="glass p-5 rounded-xl border border-border-dark">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-sm">terminal</span>
+                        <h5 class="text-xs font-bold uppercase tracking-wider text-slate-300">Live Demo Audit Log</h5>
+                    </div>
+                    <button onclick="clearDemoLog()" class="text-[10px] text-slate-400 hover:text-white">Clear</button>
+                </div>
+                <div id="demoLogBox" class="p-4 rounded-lg bg-[#0d0712] border border-border-dark font-mono text-xs text-slate-300 min-h-[140px] max-h-[300px] overflow-auto whitespace-pre-wrap leading-relaxed">
+[DEMO INITIALIZED] Select a scenario above and click 'Run Initial Review' to begin.
+                </div>
+            </div>
+        </div>
+        <!-- END VIEW 5 -->
     </main>
     <footer class="mt-20 py-12 border-t border-border-dark bg-surface-dark">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">

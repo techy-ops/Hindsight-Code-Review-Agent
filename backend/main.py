@@ -148,6 +148,17 @@ async def submit_feedback(feedback: FeedbackRequest):
             logger.warning("Feedback retention failed: %s (non-fatal)", type(e).__name__)
             retained = False
 
+    # Record in activity tracker
+    tracker.record_feedback(
+        project_id=project_id,
+        action=feedback.action,
+        issue_title=feedback.issue_title,
+        recommendation=feedback.recommendation,
+        reason=feedback.reason,
+        developer_id=feedback.developer_id,
+        retained=retained,
+    )
+
     return {
         "status": "recorded",
         "action": feedback.action,
@@ -156,6 +167,158 @@ async def submit_feedback(feedback: FeedbackRequest):
         "developer_id": feedback.developer_id,
         "issue_title": feedback.issue_title,
     }
+
+
+@app.get("/dashboard/stats")
+async def get_dashboard_stats():
+    """Return truthful, real operational metrics from memory and review activity."""
+    health = await hindsight_service.check_health()
+    stats = tracker.get_stats()
+    return {
+        "status": "success",
+        "hindsight_health": health,
+        "stats": stats,
+        "config": settings.safe_dict(),
+    }
+
+
+@app.get("/memory/explorer")
+async def get_memory_explorer(
+    project_id: Optional[str] = None,
+    developer_id: Optional[str] = None,
+    category: Optional[str] = None,
+    source: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+):
+    """Return genuine learned memories and conventions with filtering and search."""
+    target_project = project_id or settings.default_project_id
+
+    # Query Hindsight memory bank if online
+    hindsight_memories = []
+    if settings.hindsight_enabled:
+        try:
+            hindsight_memories = await hindsight_service.list_memories(
+                project_id=target_project,
+                search_query=search,
+                limit=limit,
+            )
+        except Exception as e:
+            logger.debug("list_memories notice: %s", e)
+            hindsight_memories = []
+
+    # Combine with tracker's local records
+    local_records = tracker.get_explorer_memories(
+        project_id=project_id,
+        developer_id=developer_id,
+        category=category,
+        source=source,
+        search=search,
+        limit=limit,
+    )
+
+    # Deduplicate by text
+    seen_texts = set()
+    combined = []
+    for m in hindsight_memories:
+        txt = m.get("text", "")
+        if txt and txt not in seen_texts:
+            seen_texts.add(txt)
+            combined.append({
+                "id": m.get("id"),
+                "text": txt,
+                "category": m.get("category", "observation"),
+                "source": "hindsight_bank",
+                "project_id": target_project,
+                "developer_id": developer_id,
+                "confidence": "established_convention" if m.get("category") in ("convention", "architecture") else "isolated_observation",
+                "created_at": m.get("created_at") or "Persisted in Hindsight Bank",
+            })
+
+    for m in local_records:
+        txt = m.get("text", "")
+        if txt and txt not in seen_texts:
+            seen_texts.add(txt)
+            combined.append(m)
+
+    return {
+        "total": len(combined),
+        "project_id": project_id,
+        "developer_id": developer_id,
+        "memories": combined[:limit],
+    }
+
+
+@app.get("/learning/timeline")
+async def get_learning_timeline(
+    project_id: Optional[str] = None,
+    limit: int = 50,
+):
+    """Return genuine chronological learning events (reviews, feedback, memories, reflection)."""
+    events = tracker.get_timeline(project_id=project_id, limit=limit)
+    return {
+        "project_id": project_id or "all",
+        "total": len(events),
+        "events": events,
+    }
+
+
+@app.get("/demo/scenarios")
+async def get_demo_scenarios():
+    """Return predefined Before/After learning scenarios demonstrating real Hindsight adaptation."""
+    return {
+        "scenarios": [
+            {
+                "id": "caching_convention",
+                "name": "Caching Convention (Redis vs PostgreSQL)",
+                "description": "Demonstrates agent learning to avoid repeatedly proposing Redis when team standardizes on PostgreSQL unlogged caching.",
+                "language": "python",
+                "project_id": "cache-service-demo",
+                "developer_id": "dev-alice",
+                "step1": {
+                    "title": "First Review (Baseline)",
+                    "code": "def get_search_results(query):\n    # Query search index\n    results = execute_query(query)\n    return results\n",
+                    "expected_suggestion": "Cache search results using Redis",
+                },
+                "step2": {
+                    "title": "Developer Feedback",
+                    "action": "reject",
+                    "issue_title": "Cache search results",
+                    "reason": "Project standardizes on PostgreSQL UNLOGGED tables for caching; Redis is not allowed in this deployment.",
+                },
+                "step3": {
+                    "title": "Second Review (Personalized Learning)",
+                    "code": "def get_user_dashboard(user_id):\n    # Retrieve heavy user dashboard metrics\n    data = compute_heavy_metrics(user_id)\n    return data\n",
+                    "expected_learning": "Agent suppresses Redis suggestion, cites team decision, and recommends PostgreSQL unlogged cache.",
+                }
+            },
+            {
+                "id": "repository_pattern",
+                "name": "Architectural Pattern (Repository Pattern)",
+                "description": "Demonstrates agent enforcing repository abstraction over direct raw SQL queries across reviews.",
+                "language": "python",
+                "project_id": "auth-service-demo",
+                "developer_id": "dev-bob",
+                "step1": {
+                    "title": "First Review",
+                    "code": "def get_user_by_email(db, email):\n    return db.execute(f'SELECT * FROM users WHERE email = \\'{email}\\'')\n",
+                    "expected_suggestion": "Use repository pattern with parameterized query",
+                },
+                "step2": {
+                    "title": "Developer Feedback",
+                    "action": "accept",
+                    "issue_title": "Direct Database Access",
+                    "reason": "Team enforces repository pattern for all database access.",
+                },
+                "step3": {
+                    "title": "Second Review",
+                    "code": "def get_order_by_id(db, order_id):\n    return db.execute('SELECT * FROM orders WHERE id = :id', {'id': order_id})\n",
+                    "expected_learning": "Agent flags direct SQL as violating the project's established repository pattern.",
+                }
+            }
+        ]
+    }
+
 
 
 @app.post("/review")
@@ -312,12 +475,58 @@ Return ONLY a JSON object with this exact structure (no markdown formatting, jus
             )
             if durable_records:
                 retained_count = await hindsight_service.retain_knowledge_records(durable_records)
+                tracker.record_retention(
+                    project_id=project_id,
+                    retained_count=retained_count,
+                    developer_id=developer_id,
+                    records=[
+                        {
+                            "id": getattr(r, "id", None) or f"rec_{i}",
+                            "text": r.content,
+                            "category": r.category,
+                            "source": "review_finding",
+                            "confidence": "isolated_observation",
+                        }
+                        for i, r in enumerate(durable_records)
+                    ],
+                )
         except Exception as e:
             logger.warning("Hindsight retain error: %s (review succeeded)", type(e).__name__)
             retained_count = 0
 
     # ---------------------------------------------------------
-    # STEP 6: ATTACH BACKWARD-COMPATIBLE MEMORY METADATA
+    # STEP 6: ENRICH REVIEW EXPLAINABILITY & CONVENTIONS
+    # ---------------------------------------------------------
+    explain_res = enrich_review_explainability(
+        details=data.get("details", []),
+        memories=memories,
+        reflection=reflection_data,
+    )
+    data["details"] = explain_res["details"]
+    data["explainability"] = explain_res["explainability"]
+
+    # Record reflection event if occurred
+    if reflection_data and reflection_data.get("text"):
+        tracker.record_reflection(
+            project_id=project_id,
+            summary_text=reflection_data.get("text", ""),
+            facts_count=len(reflection_data.get("based_on", [])),
+            developer_id=developer_id,
+        )
+
+    # Record review event in tracker
+    tracker.record_review(
+        project_id=project_id,
+        language=request.language,
+        developer_id=developer_id,
+        issues_count=len(data.get("details", [])),
+        influenced_by_memory=bool(explain_res["explainability"]["learned_context_findings_count"] > 0 or memory_context_prompt),
+        reflection_applied=bool(reflection_data and reflection_data.get("text")),
+        memories_recalled_count=len(memories),
+    )
+
+    # ---------------------------------------------------------
+    # STEP 7: ATTACH BACKWARD-COMPATIBLE MEMORY METADATA
     # ---------------------------------------------------------
     memories_summary = []
     for m in memories[:5]:

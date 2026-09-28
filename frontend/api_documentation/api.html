@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#7f0df2",
+              "background-light": "#f7f5f8",
+              "background-dark": "#191022",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"],
+              "mono": ["JetBrains Mono", "monospace"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<title>AI Code Review API Documentation</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex flex-col min-h-screen">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-primary/20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-3">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">terminal</span>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold tracking-tight">Agent<span class="text-primary">Review</span></h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="/platform_documentation/documentation.html">Docs</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="/api_documentation/api.html">Endpoints</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="/pricing/pricing.html">Pricing</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="/platform_documentation/documentation.html">Changelog</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-64 bg-slate-200/50 dark:bg-primary/10 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white placeholder:text-slate-500" placeholder="Search documentation..."/>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-primary/20">
+                        Get API Key
+                    </button>
+</div>
+</div>
+</header>
+<div class="max-w-7xl mx-auto w-full flex flex-1">
+<!-- Sidebar Navigation -->
+<aside class="hidden lg:flex w-64 flex-col border-r border-primary/10 p-6 gap-8">
+<div>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 px-3">Getting Started</h3>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium" href="#overview">
+<span class="material-symbols-outlined text-lg">info</span> Introduction
+                        </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#auth">
+<span class="material-symbols-outlined text-lg">lock</span> Authentication
+                        </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="#endpoints">
+<span class="material-symbols-outlined text-lg">api</span> Endpoints
+                        </a>
+</div>
+</div>
+<div>
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4 px-3">Resources</h3>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="/">
+<span class="material-symbols-outlined text-lg">code</span> SDKs
+                        </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="/">
+<span class="material-symbols-outlined text-lg">webhook</span> Webhooks
+                        </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5 transition-colors" href="/">
+<span class="material-symbols-outlined text-lg">error</span> Error Codes
+                        </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 px-6 lg:px-12 py-10 max-w-4xl">
+<!-- Hero Section -->
+<section class="mb-16" id="overview">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold mb-4 uppercase tracking-widest">
+                        v1.2.0 Stable
+                    </div>
+<h1 class="text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 leading-tight">
+                        AI Code Review &amp; <br/><span class="text-primary">Rewrite Agent</span>
+</h1>
+<p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+                        The AI Code Review API provides advanced static and semantic analysis to detect bugs, security vulnerabilities, and stylistic inconsistencies. Beyond detection, the agent suggests and can perform automated refactoring and logic rewrites to ensure high-performance production code.
+                    </p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-primary/10 pt-8">
+<div class="flex flex-col gap-1">
+<span class="text-primary font-bold">99.9% Uptime</span>
+<span class="text-sm text-slate-500">Enterprise reliability</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-primary font-bold">&lt; 2s Latency</span>
+<span class="text-sm text-slate-500">Optimized inference</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-primary font-bold">25+ Languages</span>
+<span class="text-sm text-slate-500">Broad stack support</span>
+</div>
+</div>
+</section>
+<!-- Authentication Section -->
+<section class="mb-16 scroll-mt-24" id="auth">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">key</span> Authentication
+                    </h2>
+<p class="text-slate-600 dark:text-slate-400 mb-6">
+                        To access the API, you must include a Bearer token in the <code class="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono text-sm">Authorization</code> header of every request. You can manage your keys in the developer dashboard.
+                    </p>
+<div class="relative group rounded-xl overflow-hidden bg-slate-900 shadow-2xl">
+<div class="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-white/5">
+<span class="text-xs font-mono text-slate-400 uppercase tracking-widest">cURL</span>
+<button class="text-xs flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">content_copy</span> Copy
+                            </button>
+</div>
+<div class="p-6 font-mono text-sm overflow-x-auto">
+<pre class="text-slate-300"><code>curl -X GET "https://api.agentreview.ai/v1/user" \
+  -H <span class="text-primary">"Authorization: Bearer YOUR_API_KEY"</span></code></pre>
+</div>
+</div>
+</section>
+<!-- Example Request -->
+<section class="mb-16 scroll-mt-24" id="endpoints">
+<div class="flex items-center gap-3 mb-6">
+<span class="bg-primary text-white text-xs font-bold px-2 py-1 rounded">POST</span>
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">/v1/review</h2>
+</div>
+<p class="text-slate-600 dark:text-slate-400 mb-6">
+                        Submit a code snippet or a file URL for analysis. Specify the level of intensity and whether you want automated rewrite suggestions.
+                    </p>
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Request Body</h3>
+<div class="relative group rounded-xl overflow-hidden bg-slate-900 shadow-2xl mb-8">
+<div class="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-white/5">
+<span class="text-xs font-mono text-slate-400 uppercase tracking-widest">JSON Request</span>
+<button class="text-xs flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">content_copy</span> Copy
+                            </button>
+</div>
+<div class="p-6 font-mono text-sm overflow-x-auto">
+<pre class="text-slate-300"><code>{
+  <span class="text-primary">"language"</span>: "javascript",
+  <span class="text-primary">"code"</span>: "function add(a, b) { var result = a + b; return result; }",
+  <span class="text-primary">"options"</span>: {
+    <span class="text-primary">"intensity"</span>: "deep",
+    <span class="text-primary">"rewrite"</span>: <span class="text-blue-400">true</span>,
+    <span class="text-primary">"context"</span>: "enterprise-standard"
+  }
+}</code></pre>
+</div>
+</div>
+<!-- Example Response -->
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Successful Response</h3>
+<div class="relative group rounded-xl overflow-hidden bg-slate-900 shadow-2xl">
+<div class="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-white/5">
+<span class="text-xs font-mono text-slate-400 uppercase tracking-widest">JSON Response (200 OK)</span>
+<button class="text-xs flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">content_copy</span> Copy
+                            </button>
+</div>
+<div class="p-6 font-mono text-sm overflow-x-auto max-h-[400px]">
+<pre class="text-slate-300"><code>{
+  <span class="text-primary">"status"</span>: "success",
+  <span class="text-primary">"review_id"</span>: "rev_829104x",
+  <span class="text-primary">"analysis"</span>: {
+    <span class="text-primary">"score"</span>: 78,
+    <span class="text-primary">"issues"</span>: [
+      {
+        <span class="text-primary">"type"</span>: "style",
+        <span class="text-primary">"severity"</span>: "low",
+        <span class="text-primary">"message"</span>: "Use 'const' instead of 'var' for block-scope safety."
+      }
+    ],
+    <span class="text-primary">"rewrite_suggestion"</span>: "const add = (a, b) =&gt; a + b;",
+    <span class="text-primary">"explanation"</span>: "Modern ES6 syntax improves readability and ensures immutability."
+  }
+}</code></pre>
+</div>
+</div>
+</section>
+<!-- Help Banner -->
+<div class="bg-primary/10 border border-primary/20 rounded-xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+<div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-2">Need a custom implementation?</h4>
+<p class="text-slate-600 dark:text-slate-400">Our engineering team can help you build custom logic for your specific architecture.</p>
+</div>
+<button class="bg-primary text-white font-bold px-6 py-3 rounded-lg whitespace-nowrap hover:scale-105 transition-transform">
+                        Contact Sales
+                    </button>
+</div>
+</main>
+<!-- Table of Contents (Right Sidebar) -->
+<aside class="hidden xl:block w-64 p-10">
+<div class="sticky top-24">
+<h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">On this page</h4>
+<ul class="flex flex-col gap-3 text-sm">
+<li><a class="text-primary font-medium" href="#overview">Overview</a></li>
+<li><a class="text-slate-500 hover:text-primary transition-colors" href="#auth">Authentication</a></li>
+<li><a class="text-slate-500 hover:text-primary transition-colors" href="#endpoints">POST /review</a></li>
+<li><a class="text-slate-500 hover:text-primary transition-colors" href="/api_documentation/api.html">Request Schema</a></li>
+<li><a class="text-slate-500 hover:text-primary transition-colors" href="/api_documentation/api.html">Response Schema</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<!-- Footer -->
+<footer class="border-t border-primary/10 py-12 px-6 bg-background-light dark:bg-background-dark/50">
+<div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+<div class="col-span-2">
+<div class="flex items-center gap-3 text-primary mb-6">
+<span class="material-symbols-outlined text-2xl font-bold">terminal</span>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold">AgentReview</h2>
+</div>
+<p class="text-slate-500 max-w-sm mb-6">Building the future of automated software engineering. Ship cleaner, safer code faster than ever.</p>
+<div class="flex gap-4">
+<a class="text-slate-400 hover:text-primary transition-colors" href="/"><span class="material-symbols-outlined">public</span></a>
+<a class="text-slate-400 hover:text-primary transition-colors" href="/"><span class="material-symbols-outlined">alternate_email</span></a>
+<a class="text-slate-400 hover:text-primary transition-colors" href="/"><span class="material-symbols-outlined">hub</span></a>
+</div>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4">Product</h4>
+<ul class="flex flex-col gap-2 text-sm text-slate-500">
+<li><a class="hover:text-primary" href="/">Features</a></li>
+<li><a class="hover:text-primary" href="/platform_documentation/documentation.html">Integrations</a></li>
+<li><a class="hover:text-primary" href="/pricing/pricing.html">Pricing</a></li>
+<li><a class="hover:text-primary" href="/pricing/pricing.html">Enterprise</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4">Company</h4>
+<ul class="flex flex-col gap-2 text-sm text-slate-500">
+<li><a class="hover:text-primary" href="/platform_documentation/documentation.html">About</a></li>
+<li><a class="hover:text-primary" href="/platform_documentation/documentation.html">Blog</a></li>
+<li><a class="hover:text-primary" href="/platform_documentation/documentation.html">Careers</a></li>
+<li><a class="hover:text-primary" href="/platform_documentation/documentation.html">Legal</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-7xl mx-auto border-t border-primary/5 mt-12 pt-8 flex justify-between items-center text-xs text-slate-500">
+<p>© 2024 AgentReview AI. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary" href="/platform_documentation/documentation.html">Privacy Policy</a>
+<a class="hover:text-primary" href="/platform_documentation/documentation.html">Terms of Service</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

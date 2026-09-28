@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(127, 13, 242, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(127, 13, 242, 0.15);
+        }
+
+        .chart-bar {
+            background: linear-gradient(180deg, #7f0df2 0%, rgba(127, 13, 242, 0.3) 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <header
+            class="flex items-center justify-between border-b border-primary/20 px-6 py-4 lg:px-20 bg-background-light/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3 text-primary cursor-pointer" onclick="window.location.href='/'">
+                    <span class="material-symbols-outlined text-3xl font-bold">terminal</span>
+                    <h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">CodeMind
+                        AI</h2>
+                </div>
+                <div class="hidden md:flex items-center gap-6">
+                    <a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1"
+                        href="/developer_dashboard/developer.html">Dashboard</a>
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium"
+                        href="/review_history/history.html">History</a>
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium"
+                        href="/platform_documentation/documentation.html">Docs</a>
+                    <a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium"
+                        href="/api_documentation/api.html">API</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden lg:flex items-center bg-primary/10 rounded-lg px-3 py-1.5 border border-primary/20">
+                    <span class="material-symbols-outlined text-primary text-lg mr-2">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-sm placeholder:text-slate-500 w-48"
+                        placeholder="Search code reviews..." type="text" />
+                </div>
+                <button class="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    onclick="window.location.href='/'" onclick="window.location.href='/'"
+                    onclick="window.location.href='/review_history/history.html'">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <div
+                    class="size-10 rounded-full border-2 border-primary bg-primary/20 flex items-center justify-center overflow-hidden">
+                    <img alt="User Profile" class="size-full object-cover"
+                        data-alt="User profile avatar with minimalist design"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJeLQ22LrJ5eSD-JSgmQwQm6sPcg8Ajg20sXdMcNQeJqpTeFxF1ZqDiWP1RE9KDaicNZp08VQygumu3E69HfSTl4NXPBCa0hUXweCl5GIFLNqp5fnbH6_ExRJmL_GmV0vVbep3NVfBMdChwHKSyDdZw_UHPh-0wv0jOajC3G7WBkJ9mCY4JOJnZ_k4Ct_5hrvwdxoUQjXhSV92b99JG02FoevFRGrvDeFMecVt5mHlqGmwcYWdUQQgaUwIuF0SMSWBvJSK2Rep0l8" />
+                </div>
+            </div>
+        </header>
+        <main class="flex-1 px-6 lg:px-20 py-8">
+            <div class="max-w-7xl mx-auto space-y-8">
+                <section>
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Developer
+                            Dashboard</h1>
+                        <p class="text-slate-600 dark:text-slate-400 mt-1">Real-time insights from your AI Code Review
+                            agent.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass-card rounded-xl p-6 relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-symbols-outlined text-6xl">analytics</span>
+                            </div>
+                            <p
+                                class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 uppercase tracking-wider">
+                                Total Analyses</p>
+                            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">1,284</h3>
+                            <div class="flex items-center text-emerald-500 text-sm font-bold">
+                                <span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                                <span>+12% vs last month</span>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-xl p-6 relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-symbols-outlined text-6xl">bug_report</span>
+                            </div>
+                            <p
+                                class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 uppercase tracking-wider">
+                                Bugs Detected</p>
+                            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">452</h3>
+                            <div class="flex items-center text-emerald-500 text-sm font-bold">
+                                <span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+                                <span>88% fixed by AI</span>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-xl p-6 relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span class="material-symbols-outlined text-6xl">auto_fix_high</span>
+                            </div>
+                            <p
+                                class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 uppercase tracking-wider">
+                                Optimizations</p>
+                            <h3 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">890</h3>
+                            <div class="flex items-center text-primary text-sm font-bold">
+                                <span class="material-symbols-outlined text-sm mr-1">bolt</span>
+                                <span>Average 14% perf gain</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <section class="lg:col-span-8 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">history</span>
+                                Recent Code Reviews
+                            </h2>
+                            <button class="text-primary text-sm font-semibold hover:underline"
+                                onclick="window.location.href='/review_history/history.html'">View All</button>
+                        </div>
+                        <div class="glass-card rounded-xl overflow-hidden border border-primary/10">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-primary/5 border-b border-primary/10">
+                                        <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                            Repository / File</th>
+                                        <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                            Language</th>
+                                        <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                                            Issues</th>
+                                        <th
+                                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">
+                                            Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-primary/5">
+                                    <tr class="hover:bg-primary/5 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-slate-900 dark:text-slate-100">
+                                                auth-service/login.py</div>
+                                            <div class="text-xs text-slate-500">2 hours ago</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2 py-1 rounded bg-blue-500/10 text-blue-500 text-xs font-bold border border-blue-500/20 uppercase">Python</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-amber-500 font-bold">12 issues</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button
+                                                class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary/80 transition-all"
+                                                onclick="window.location.href='/review_history/history.html'">View
+                                                Review</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-primary/5 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-slate-900 dark:text-slate-100">
+                                                ui-kit/Button.tsx</div>
+                                            <div class="text-xs text-slate-500">5 hours ago</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2 py-1 rounded bg-yellow-500/10 text-yellow-500 text-xs font-bold border border-yellow-500/20 uppercase">TypeScript</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-emerald-500 font-bold">Clean</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button
+                                                class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary/80 transition-all"
+                                                onclick="window.location.href='/review_history/history.html'">View
+                                                Review</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-primary/5 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-slate-900 dark:text-slate-100">
+                                                api-gateway/router.go</div>
+                                            <div class="text-xs text-slate-500">Yesterday</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2 py-1 rounded bg-cyan-500/10 text-cyan-500 text-xs font-bold border border-cyan-500/20 uppercase">Golang</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-rose-500 font-bold">3 critical</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button
+                                                class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary/80 transition-all"
+                                                onclick="window.location.href='/review_history/history.html'">View
+                                                Review</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-primary/5 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-slate-900 dark:text-slate-100">
+                                                data-layer/models.js</div>
+                                            <div class="text-xs text-slate-500">Yesterday</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2 py-1 rounded bg-primary/10 text-primary text-xs font-bold border border-primary/20 uppercase">JS</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-amber-500 font-bold">5 issues</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button
+                                                class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary/80 transition-all"
+                                                onclick="window.location.href='/review_history/history.html'">View
+                                                Review</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-primary/5 transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="font-medium text-slate-900 dark:text-slate-100">
+                                                infra/docker-compose.yml</div>
+                                            <div class="text-xs text-slate-500">2 days ago</div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span
+                                                class="px-2 py-1 rounded bg-slate-500/10 text-slate-400 text-xs font-bold border border-slate-500/20 uppercase">YAML</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-slate-400 font-bold">No issues</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button
+                                                class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary/80 transition-all"
+                                                onclick="window.location.href='/review_history/history.html'">View
+                                                Review</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="lg:col-span-4 space-y-6">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6">Quick Actions</h2>
+                            <div class="space-y-3">
+                                <button onclick="window.location.href='/'"
+                                    class="w-full flex items-center justify-between p-4 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                                    <span class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined">rocket_launch</span>
+                                        Analyze New Code
+                                    </span>
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </button>
+                                <button onclick="window.location.href='/'"
+                                    class="w-full flex items-center justify-between p-4 rounded-xl glass-card text-slate-900 dark:text-white font-bold hover:bg-primary/10 transition-all">
+                                    <span class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined">upload_file</span>
+                                        Upload Source File
+                                    </span>
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </button>
+                                <button onclick="window.location.href='/review_history/history.html'"
+                                    class="w-full flex items-center justify-between p-4 rounded-xl glass-card text-slate-900 dark:text-white font-bold hover:bg-primary/10 transition-all">
+                                    <span class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined">folder_open</span>
+                                        Open Review History
+                                    </span>
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="glass-card rounded-xl p-6">
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">bar_chart</span>
+                                Usage Analytics
+                            </h2>
+                            <div class="flex items-end justify-between h-32 gap-2 mb-4">
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 40%"></div>
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 65%"></div>
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 45%"></div>
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 90%"></div>
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 75%"></div>
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 85%"></div>
+                                <div class="chart-bar w-full rounded-t-sm" style="height: 60%"></div>
+                            </div>
+                            <div
+                                class="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                                <span>Mon</span>
+                                <span>Tue</span>
+                                <span>Wed</span>
+                                <span>Thu</span>
+                                <span>Fri</span>
+                                <span>Sat</span>
+                                <span>Sun</span>
+                            </div>
+                            <div class="mt-6 pt-6 border-t border-primary/10">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">Weekly Goal</span>
+                                    <span class="text-slate-900 dark:text-white font-bold">85% Complete</span>
+                                </div>
+                                <div class="mt-2 w-full h-1.5 bg-primary/10 rounded-full overflow-hidden">
+                                    <div
+                                        class="bg-primary h-full w-[85%] rounded-full shadow-[0_0_8px_rgba(127,13,242,0.5)]">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+        <footer
+            class="border-t border-primary/20 px-6 lg:px-20 py-10 mt-12 bg-background-light/50 dark:bg-background-dark/50">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center gap-3 text-primary/60">
+                    <span class="material-symbols-outlined font-bold">terminal</span>
+                    <span class="text-sm font-bold tracking-tight">CodeMind AI © 2024</span>
+                </div>
+                <div class="flex gap-8 text-sm font-medium text-slate-500">
+                    <a class="hover:text-primary transition-colors"
+                        href="/platform_documentation/documentation.html">Privacy Policy</a>
+                    <a class="hover:text-primary transition-colors"
+                        href="/platform_documentation/documentation.html">Terms of Service</a>
+                    <a class="hover:text-primary transition-colors"
+                        href="/platform_documentation/documentation.html">Support</a>
+                    <a class="hover:text-primary transition-colors"
+                        href="/platform_documentation/documentation.html">Status</a>
+                </div>
+                <div class="flex gap-4">
+                    <button
+                        class="size-8 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center hover:bg-primary/20 text-slate-400 hover:text-primary">
+                        <span class="material-symbols-outlined text-lg">share</span>
+                    </button>
+                    <button
+                        class="size-8 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center hover:bg-primary/20 text-slate-400 hover:text-primary">
+                        <span class="material-symbols-outlined text-lg">public</span>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

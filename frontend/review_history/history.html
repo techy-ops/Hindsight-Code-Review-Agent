@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(127, 13, 242, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(127, 13, 242, 0.15);
+        }
+
+        .code-block {
+            background: rgba(10, 5, 15, 0.6);
+            border: 1px solid rgba(127, 13, 242, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Top Navigation -->
+        <header
+            class="flex items-center justify-between whitespace-nowrap border-b border-primary/20 px-6 py-4 lg:px-20 bg-background-dark/80 backdrop-blur-md sticky top-0 z-50">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3 text-primary">
+                    <span class="material-symbols-outlined text-3xl font-bold">terminal</span>
+                    <h2 class="text-slate-100 text-xl font-bold leading-tight tracking-tight">CodeRefactor AI</h2>
+                </div>
+                <nav class="hidden md:flex items-center gap-8">
+                    <a class="text-slate-400 hover:text-primary transition-colors text-sm font-medium"
+                        href="/developer_dashboard/developer.html">Dashboard</a>
+                    <a class="text-primary text-sm font-medium border-b-2 border-primary pb-1"
+                        href="/review_history/history.html">History</a>
+                    <a class="text-slate-400 hover:text-primary transition-colors text-sm font-medium"
+                        href="/developer_dashboard/developer.html">Settings</a>
+                </nav>
+            </div>
+            <div class="flex flex-1 justify-end gap-6 items-center">
+                <div class="hidden sm:flex items-center bg-primary/10 rounded-lg px-3 py-1.5 border border-primary/20">
+                    <span class="material-symbols-outlined text-primary text-xl">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-sm placeholder:text-slate-500 w-48"
+                        placeholder="Search reviews..." type="text"
+                        onkeypress="if(event.key === 'Enter') alert('Search functionality coming soon!')" />
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        class="flex items-center justify-center rounded-lg size-10 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/30 cursor-pointer"
+                        data-alt="User profile avatar circle" onclick="window.location.href='/login/login.html'">
+                        <img alt="Profile" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj9JnwaFWXP6zHh-e4WiQKrH817pkmuwbm58Etamo43wf02VQw9oorG8wm798BqbI803r0qDeih2vE9f2CAQQjNJNWjnY16dmrFyRdwTM8Y3z3uOO43yNBF1WYUnfyThqK_JBkqqOpNAEuOhmydYUo12FXL4BzsMVa72-dmwttdieMp9Xmvau9NmZ3bw8A1qxxTMxdoAmORoSCEOXHCijbl2EUtXPl-6CwuTWy4SIUEOjsXHK_Y9_7wX5FnEyjHC64a26oBXTd92g" />
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main class="flex-1 flex flex-col px-6 lg:px-20 py-10 max-w-[1440px] mx-auto w-full">
+            <!-- Header Section -->
+            <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-10">
+                <div class="space-y-2">
+                    <h1 class="text-4xl font-extrabold tracking-tight text-slate-100">Review History</h1>
+                    <p class="text-slate-400 text-lg">Manage and explore your AI-driven code optimizations and security
+                        scans.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="window.location.href='/'"
+                        class="px-6 py-2.5 rounded-lg bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 transition-transform flex items-center gap-2">
+                        <span class="material-symbols-outlined text-xl">add_box</span>
+                        New Review
+                    </button>
+                </div>
+            </div>
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                <div class="glass-panel p-6 rounded-xl flex items-center gap-4">
+                    <div class="size-12 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined">report</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Critical Issues</p>
+                        <p class="text-2xl font-black text-slate-100">12</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl flex items-center gap-4">
+                    <div class="size-12 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined">warning</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">High Alerts</p>
+                        <p class="text-2xl font-black text-slate-100">28</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl flex items-center gap-4">
+                    <div class="size-12 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined">code</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Lines Refactored</p>
+                        <p class="text-2xl font-black text-slate-100">4,209</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-xl flex items-center gap-4">
+                    <div class="size-12 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Optimized</p>
+                        <p class="text-2xl font-black text-slate-100">94%</p>
+                    </div>
+                </div>
+            </div>
+            <!-- History Table -->
+            <div class="glass-panel rounded-xl overflow-hidden mb-10">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-primary/10 border-b border-primary/20">
+                                <th class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider">
+                                    Language</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider">
+                                    Project/File</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider text-center">
+                                    Critical</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider text-center">
+                                    High</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider text-center">
+                                    Med</th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider text-center">
+                                    Low</th>
+                                <th class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider">Date
+                                </th>
+                                <th
+                                    class="px-6 py-4 text-sm font-semibold text-primary uppercase tracking-wider text-right">
+                                    Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-primary/10">
+                            <!-- Row 1 -->
+                            <tr class="hover:bg-primary/5 transition-colors group">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="size-8 rounded bg-yellow-400/10 text-yellow-400 flex items-center justify-center font-bold text-xs">
+                                            JS</div>
+                                        <span class="font-medium">JavaScript</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-slate-300 font-mono text-sm">auth-controller.ts</td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20">2</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/20">5</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">12</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-bold border border-slate-500/20">8</span>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-slate-400">2 mins ago</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button
+                                        class="text-primary hover:text-slate-100 font-bold text-sm underline underline-offset-4 decoration-primary/30 group-hover:decoration-primary transition-all">View
+                                        Details</button>
+                                </td>
+                            </tr>
+                            <!-- Row 2 -->
+                            <tr class="hover:bg-primary/5 transition-colors group">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="size-8 rounded bg-blue-400/10 text-blue-400 flex items-center justify-center font-bold text-xs">
+                                            PY</div>
+                                        <span class="font-medium">Python</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-slate-300 font-mono text-sm">data-pipeline.py</td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-500 text-xs font-bold">0</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/20">1</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">4</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-bold border border-slate-500/20">15</span>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-slate-400">Oct 28, 2023</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button
+                                        class="text-primary hover:text-slate-100 font-bold text-sm underline underline-offset-4 decoration-primary/30 group-hover:decoration-primary transition-all">View
+                                        Details</button>
+                                </td>
+                            </tr>
+                            <!-- Row 3 -->
+                            <tr class="hover:bg-primary/5 transition-colors group">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="size-8 rounded bg-sky-400/10 text-sky-400 flex items-center justify-center font-bold text-xs">
+                                            GO</div>
+                                        <span class="font-medium">Go</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-slate-300 font-mono text-sm">service-mesh.go</td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20">1</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/20">0</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">2</span>
+                                </td>
+                                <td class="px-6 py-5 text-center"><span
+                                        class="px-2.5 py-1 rounded-full bg-slate-500/10 text-slate-400 text-xs font-bold border border-slate-500/20">3</span>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-slate-400">Oct 26, 2023</td>
+                                <td class="px-6 py-5 text-right">
+                                    <button
+                                        class="text-primary hover:text-slate-100 font-bold text-sm underline underline-offset-4 decoration-primary/30 group-hover:decoration-primary transition-all">View
+                                        Details</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Detailed View (Representing an Overlay / Content Block) -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-4">
+                    <span class="material-symbols-outlined text-primary">analytics</span>
+                    <h2 class="text-2xl font-bold">Optimization Preview: auth-controller.ts</h2>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <!-- Original Code -->
+                    <div class="flex flex-col gap-3">
+                        <div
+                            class="flex justify-between items-center px-4 py-2 bg-background-dark/50 border border-primary/20 rounded-t-lg">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Original
+                                Code</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">Security
+                                Flaw Found</span>
+                        </div>
+                        <div class="code-block p-6 rounded-b-lg font-mono text-sm leading-relaxed overflow-x-auto">
+                            <pre class="text-slate-300"><span class="text-slate-500">1</span> <span class="text-blue-400">async function</span> <span class="text-yellow-400">login</span>(req, res) {
+<span class="text-slate-500">2</span>   <span class="text-blue-400">const</span> { username, password } = req.body;
+<span class="text-slate-500">3</span>   <span class="text-blue-400">const</span> user = <span class="text-blue-400">await</span> db.query(
+<span class="text-slate-500">4</span>     <span class="text-green-400">`SELECT * FROM users WHERE user = '${username}'`</span>
+<span class="text-slate-500">5</span>   );
+<span class="text-slate-500">6</span>   <span class="text-blue-400">if</span> (user.password === password) {
+<span class="text-slate-500">7</span>     <span class="text-blue-400">return</span> res.json({ success: <span class="text-primary">true</span> });
+<span class="text-slate-500">8</span>   }
+<span class="text-slate-500">9</span> }</pre>
+                        </div>
+                    </div>
+                    <!-- Optimized Code -->
+                    <div class="flex flex-col gap-3">
+                        <div
+                            class="flex justify-between items-center px-4 py-2 bg-primary/10 border border-primary/40 rounded-t-lg">
+                            <span class="text-xs font-bold text-primary uppercase tracking-widest">AI Refactored</span>
+                            <span
+                                class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">Optimized
+                                &amp; Secure</span>
+                        </div>
+                        <div
+                            class="code-block p-6 rounded-b-lg font-mono text-sm leading-relaxed overflow-x-auto relative overflow-hidden">
+                            <div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+                            <pre class="text-slate-300"><span class="text-slate-500">1</span> <span class="text-blue-400">async function</span> <span class="text-yellow-400">login</span>(req, res) {
+<span class="text-slate-500">2</span>   <span class="text-blue-400">const</span> { username, password } = req.body;
+<span class="text-slate-500">3</span>   <span class="text-blue-400">const</span> user = <span class="text-blue-400">await</span> db.query(
+<span class="text-slate-500">4</span>     <span class="text-green-400">"SELECT * FROM users WHERE user = $1"</span>, [username]
+<span class="text-slate-500">5</span>   );
+<span class="text-slate-500">6</span>   <span class="text-blue-400">const</span> isValid = <span class="text-blue-400">await</span> bcrypt.compare(password, user.hash);
+<span class="text-slate-500">7</span>   <span class="text-blue-400">return</span> res.status(isValid ? <span class="text-primary">200</span> : <span class="text-primary">401</span>).json({ success: isValid });
+<span class="text-slate-500">8</span> }</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Footer -->
+        <footer class="border-t border-primary/20 bg-background-dark/80 px-6 lg:px-20 py-12 mt-10">
+            <div class="flex flex-col md:flex-row justify-between gap-10">
+                <div class="max-w-xs">
+                    <div class="flex items-center gap-2 text-primary mb-4">
+                        <span class="material-symbols-outlined text-2xl font-bold">terminal</span>
+                        <h2 class="text-slate-100 text-lg font-bold">CodeRefactor AI</h2>
+                    </div>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Precision AI code analysis and refactoring for modern engineering teams. Keep your codebase
+                        clean, secure, and fast.
+                    </p>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
+                    <div class="flex flex-col gap-4">
+                        <h4 class="text-slate-100 font-bold text-sm uppercase tracking-widest">Platform</h4>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors" href="/">Analyzer</a>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/api_documentation/api.html">API Docs</a>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">Integrations</a>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <h4 class="text-slate-100 font-bold text-sm uppercase tracking-widest">Support</h4>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">Help Center</a>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">Security</a>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">Status</a>
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <h4 class="text-slate-100 font-bold text-sm uppercase tracking-widest">Company</h4>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">About</a>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">Privacy</a>
+                        <a class="text-slate-500 hover:text-primary text-sm transition-colors"
+                            href="/platform_documentation/documentation.html">Terms</a>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="mt-12 pt-8 border-t border-primary/10 flex justify-between items-center text-slate-500 text-xs font-medium">
+                <p>© 2023 CodeRefactor AI Inc. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a class="hover:text-primary transition-colors" href="https://twitter.com">Twitter</a>
+                    <a class="hover:text-primary transition-colors" href="https://github.com">GitHub</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+
+</html>

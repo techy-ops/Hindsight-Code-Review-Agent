@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Code Review &amp; Rewrite Agent - Documentation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 w-full border-b border-primary/20 bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<span class="material-symbols-outlined text-3xl">auto_fix_high</span>
+<h2 class="text-slate-100 text-xl font-bold tracking-tight">AI Code Agent</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-100/70 hover:text-primary transition-colors text-sm font-medium" href="/platform_documentation/documentation.html">Docs</a>
+<a class="text-slate-100/70 hover:text-primary transition-colors text-sm font-medium" href="/">Features</a>
+<a class="text-slate-100/70 hover:text-primary transition-colors text-sm font-medium" href="/pricing/pricing.html">Pricing</a>
+<a class="text-slate-100/70 hover:text-primary transition-colors text-sm font-medium" href="/">Community</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex relative items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-100/40 text-xl">search</span>
+<input class="bg-primary/10 border-primary/20 rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:ring-primary focus:border-primary placeholder:text-slate-100/30" placeholder="Search documentation..." type="text"/>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all transform hover:scale-105">
+                        Get Started
+                    </button>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
+<section class="mb-20">
+<div class="flex flex-col md:flex-row justify-between items-start gap-8 border-b border-primary/10 pb-12">
+<div class="max-w-2xl">
+<span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">Official Documentation</span>
+<h1 class="text-5xl font-black text-slate-100 mb-6 leading-tight">AI Code Review &amp; Rewrite Agent</h1>
+<p class="text-slate-100/60 text-lg leading-relaxed">
+                            A high-performance automated code quality engine. Effortlessly scan repositories, detect complex architectural anti-patterns, and apply one-click refactoring.
+                        </p>
+</div>
+<button class="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-xl border border-primary/30 font-bold transition-all">
+<span class="material-symbols-outlined">terminal</span>
+                        View on GitHub
+                    </button>
+</div>
+</section>
+<section class="mb-24">
+<h2 class="text-3xl font-bold text-slate-100 mb-12 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                    How AI Code Review Works
+                </h2>
+<div class="relative grid grid-cols-1 md:grid-cols-4 gap-8">
+<div class="absolute top-1/2 left-0 w-full h-[1px] bg-primary/10 -translate-y-1/2 hidden md:block"></div>
+<div class="relative bg-background-dark p-6 rounded-2xl border border-primary/10 z-10">
+<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined">content_paste</span>
+</div>
+<h3 class="text-slate-100 font-bold text-xl mb-3">1. Paste Code</h3>
+<p class="text-slate-100/50 text-sm leading-relaxed">Input your raw source code or connect your repository directly via GitHub Webhooks.</p>
+</div>
+<div class="relative bg-background-dark p-6 rounded-2xl border border-primary/10 z-10">
+<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined">settings_suggest</span>
+</div>
+<h3 class="text-slate-100 font-bold text-xl mb-3">2. Select Rules</h3>
+<p class="text-slate-100/50 text-sm leading-relaxed">Choose presets for Security, Performance, Style, or specific Compliance standards.</p>
+</div>
+<div class="relative bg-background-dark p-6 rounded-2xl border border-primary/10 z-10">
+<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined">troubleshoot</span>
+</div>
+<h3 class="text-slate-100 font-bold text-xl mb-3">3. Analyze</h3>
+<p class="text-slate-100/50 text-sm leading-relaxed">Our LLM-powered engine scans for logic bugs, vulnerabilities, and dead code patterns.</p>
+</div>
+<div class="relative bg-background-dark p-6 rounded-2xl border border-primary/10 z-10">
+<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white mb-6">
+<span class="material-symbols-outlined">auto_fix_normal</span>
+</div>
+<h3 class="text-slate-100 font-bold text-xl mb-3">4. Optimize</h3>
+<p class="text-slate-100/50 text-sm leading-relaxed">Review suggestions and apply automated rewrites that optimize complexity and speed.</p>
+</div>
+</div>
+</section>
+<section class="mb-24">
+<div class="bg-gradient-to-br from-primary/5 to-transparent p-12 rounded-3xl border border-primary/10">
+<h2 class="text-3xl font-bold text-slate-100 mb-10 text-center">Supported Ecosystem</h2>
+<div class="grid grid-cols-2 md:grid-cols-6 gap-6">
+<div class="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">terminal</span>
+</div>
+<span class="text-slate-100 font-medium">Python</span>
+</div>
+<div class="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">javascript</span>
+</div>
+<span class="text-slate-100 font-medium">JavaScript</span>
+</div>
+<div class="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">coffee</span>
+</div>
+<span class="text-slate-100 font-medium">Java</span>
+</div>
+<div class="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">data_object</span>
+</div>
+<span class="text-slate-100 font-medium">C++</span>
+</div>
+<div class="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">rocket_launch</span>
+</div>
+<span class="text-slate-100 font-medium">Go</span>
+</div>
+<div class="flex flex-col items-center gap-4 p-6 rounded-2xl hover:bg-primary/10 transition-colors border border-transparent hover:border-primary/20">
+<div class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">build</span>
+</div>
+<span class="text-slate-100 font-medium">Rust</span>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-24">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div>
+<h2 class="text-3xl font-bold text-slate-100 mb-6">Best Practices for AI-Driven Code Review</h2>
+<p class="text-slate-100/60 mb-8 leading-relaxed">Follow these patterns to ensure the agent provides the most accurate and high-impact refactoring suggestions for your codebase.</p>
+<div class="space-y-4">
+<div class="p-6 bg-primary/5 backdrop-blur-md rounded-2xl border border-white/5 flex gap-4">
+<div class="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div>
+<h4 class="text-slate-100 font-bold mb-1">Contextual Comments</h4>
+<p class="text-slate-100/50 text-sm">Keep comments descriptive. The AI uses your natural language intent to verify logic flow.</p>
+</div>
+</div>
+<div class="p-6 bg-primary/5 backdrop-blur-md rounded-2xl border border-white/5 flex gap-4">
+<div class="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div>
+<h4 class="text-slate-100 font-bold mb-1">Small PR Sizes</h4>
+<p class="text-slate-100/50 text-sm">Submit logic in atomic chunks. Smaller diffs lead to deeper semantic analysis and fewer false positives.</p>
+</div>
+</div>
+<div class="p-6 bg-primary/5 backdrop-blur-md rounded-2xl border border-white/5 flex gap-4">
+<div class="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+</div>
+<div>
+<h4 class="text-slate-100 font-bold mb-1">Consistent Typings</h4>
+<p class="text-slate-100/50 text-sm">Strongly typed codebases allow the AI to perform complex data-flow analysis across modules.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+<div class="relative bg-background-dark p-4 rounded-2xl border border-primary/20 overflow-hidden shadow-2xl">
+<div class="flex items-center gap-2 mb-4 border-b border-primary/10 pb-2">
+<div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+<div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+<span class="text-xs text-slate-100/40 ml-4 font-mono">review_session.py</span>
+</div>
+<pre class="font-mono text-sm leading-relaxed text-slate-100/80 p-4"><span class="text-purple-400">def</span> <span class="text-blue-400">calculate_metrics</span>(data):
+    <span class="text-slate-100/40"># AI optimized loop</span>
+    result = [x * 1.05 <span class="text-purple-400">for</span> x <span class="text-purple-400">in</span> data <span class="text-purple-400">if</span> x &gt; 0]
+    
+<span class="text-primary">+   # Security Fix Applied</span>
+<span class="text-primary">+   validate_integrity(result)</span>
+    
+    <span class="text-purple-400">return</span> sum(result) / len(result)</pre>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="w-full border-t border-primary/10 bg-background-dark py-12">
+<div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-3 text-primary/60">
+<span class="material-symbols-outlined text-2xl">auto_fix_high</span>
+<span class="text-sm font-bold tracking-tight">AI Code Agent © 2024</span>
+</div>
+<div class="flex items-center gap-10">
+<a class="text-slate-100/40 hover:text-primary transition-colors text-sm" href="/platform_documentation/documentation.html">Privacy Policy</a>
+<a class="text-slate-100/40 hover:text-primary transition-colors text-sm" href="/platform_documentation/documentation.html">Terms of Service</a>
+<a class="text-slate-100/40 hover:text-primary transition-colors text-sm" href="/platform_documentation/documentation.html">Status</a>
+<a class="text-slate-100/40 hover:text-primary transition-colors text-sm" href="/platform_documentation/documentation.html">Contact</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

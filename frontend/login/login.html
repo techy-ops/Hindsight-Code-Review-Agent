@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login | AI Code Review Agent</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(38, 24, 52, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(127, 13, 242, 0.2);
+        }
+
+        .violet-glow {
+            box-shadow: 0 0 40px -10px rgba(127, 13, 242, 0.3);
+        }
+
+        .bg-gradient-mesh {
+            background-color: #191022;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(127, 13, 242, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(127, 13, 242, 0.1) 0px, transparent 50%);
+        }
+    </style>
+</head>
+
+<body
+    class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col bg-gradient-mesh">
+    <header class="flex items-center justify-between px-6 py-4 md:px-12 border-b border-primary/10">
+        <div class="flex items-center gap-3">
+            <div class="bg-primary p-2 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">terminal</span>
+            </div>
+            <h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold tracking-tight">AI Code Agent</h2>
+        </div>
+        <div class="hidden md:block">
+            <span class="text-slate-400 text-sm mr-2">New here?</span>
+            <a class="text-primary font-semibold hover:underline text-sm" href="/create_account/signup.html">Create an
+                account</a>
+        </div>
+    </header>
+    <main class="flex-1 flex items-center justify-center p-6">
+        <div class="w-full max-w-md">
+            <div class="glass-card violet-glow rounded-xl p-8 flex flex-col gap-6">
+                <div class="text-center space-y-2">
+                    <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome Back</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Enter your credentials to access your
+                        dashboard</p>
+                </div>
+                <div class="space-y-4">
+                    <button onclick="window.location.href='/'"
+                        class="w-full flex items-center justify-center gap-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 py-3 rounded-lg transition-colors font-medium">
+                        <img alt="Google Logo" class="w-5 h-5" data-alt="Official Google icon logo for authentication"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnEpTQHpHFA8wIHyoB7DnZNLA1p3Ys2YM_Oz-zA2XOjCsnRay1Fz9Wvz3dv8wHrXkTT2ddwTRpi8P38zFbVvXg9i-6win3Dfd2Pz4B4r3rNVXzyX_i5lGR-iGS8RA_ZmeLe7eFbgjdE3aOcOl7G9bGebY4oZ75atQDCt7FPHZdkkfSam96zaNyNdWMwy5F_L2g8s684lmLaz9w2pZUoHy5X5v_GeNRavvHja-TMRc_igT9vId21xUb1I12Y8vE6H4Kww0eLAWfqgg" />
+                        <span>Sign in with Google</span>
+                    </button>
+                    <div class="relative flex items-center py-2">
+                        <div class="flex-grow border-t border-slate-200 dark:border-white/10"></div>
+                        <span class="flex-shrink mx-4 text-slate-400 text-xs uppercase tracking-widest">or email</span>
+                        <div class="flex-grow border-t border-slate-200 dark:border-white/10"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="space-y-1.5">
+                            <label class="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1" for="email">Email
+                                Address</label>
+                            <div class="relative group">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl group-focus-within:text-primary transition-colors">mail</span>
+                                <input
+                                    class="w-full bg-slate-50 dark:bg-background-dark/50 border border-slate-200 dark:border-primary/20 rounded-lg py-3 pl-11 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                                    id="email" placeholder="name@company.com" type="email" />
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center ml-1">
+                                <label class="text-sm font-medium text-slate-700 dark:text-slate-300"
+                                    for="password">Password</label>
+                                <a class="text-xs text-primary hover:underline font-medium"
+                                    href="/login/login.html">Forgot Password?</a>
+                            </div>
+                            <div class="relative group">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl group-focus-within:text-primary transition-colors">lock</span>
+                                <input
+                                    class="w-full bg-slate-50 dark:bg-background-dark/50 border border-slate-200 dark:border-primary/20 rounded-lg py-3 pl-11 pr-11 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                                    id="password" placeholder="••••••••" type="password" />
+                                <button
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary"
+                                    type="button">
+                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button onclick="window.location.href='/'"
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg shadow-lg shadow-primary/25 transition-all transform active:scale-[0.98] mt-2">
+                            Login
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center pt-2">
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                        Need an account?
+                        <a class="text-primary font-bold hover:underline" href="/create_account/signup.html">Sign Up</a>
+                    </p>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-center gap-6 text-slate-500 dark:text-slate-500 text-xs font-medium">
+                <a class="hover:text-primary" href="/platform_documentation/documentation.html">Privacy Policy</a>
+                <a class="hover:text-primary" href="/platform_documentation/documentation.html">Terms of Service</a>
+                <a class="hover:text-primary" href="/platform_documentation/documentation.html">Help Center</a>
+            </div>
+        </div>
+    </main>
+    <footer class="py-6 px-12 text-center text-slate-500 dark:text-slate-600 text-xs">
+        <p>© 2024 AI Code Review &amp; Rewrite Agent. Optimized for high-performance engineering teams.</p>
+    </footer>
+</body>
+
+</html>

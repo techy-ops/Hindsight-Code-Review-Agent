@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>CodeReview AI | Intelligent Code Optimization</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Fira+Code:wght@400;500&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#0f0814",
+                        "surface-dark": "#191022",
+                        "border-dark": "#2d1b3d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["Fira Code", "monospace"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(25, 16, 34, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(127, 13, 242, 0.2);
+        }
+
+        .code-gradient {
+            background: linear-gradient(135deg, #7f0df2 0%, #4f12d4 100%);
+        }
+
+        .glow-shadow {
+            box-shadow: 0 0 20px rgba(127, 13, 242, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 border-b border-border-dark bg-background-dark/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/'">
+                <div class="size-8 bg-primary rounded-lg flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white">auto_awesome</span>
+                </div>
+                <h2 class="text-xl font-bold tracking-tight">CodeReview <span class="text-primary">AI</span></h2>
+            </div>
+            <nav class="hidden md:flex items-center gap-8">
+                <a class="text-sm font-medium hover:text-primary transition-colors"
+                    href="/developer_dashboard/developer.html">Dashboard</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors"
+                    href="/review_history/history.html">History</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors"
+                    href="/platform_documentation/documentation.html">Documentation</a>
+                <a class="text-sm font-medium hover:text-primary transition-colors"
+                    href="/api_documentation/api.html">API</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='/create_account/signup.html'"
+                    class="px-4 py-2 text-sm font-bold bg-primary hover:bg-primary/90 text-white rounded-lg transition-all shadow-lg glow-shadow">
+                    Sign Up
+                </button>
+                <div onclick="window.location.href='/login/login.html'"
+                    class="size-10 rounded-full border border-border-dark overflow-hidden bg-surface-dark cursor-pointer"
+                    data-alt="User profile avatar placeholder">
+                    <img alt="Avatar" class="w-full h-full object-cover"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzq04SOVN08DE8dqcnCrrd0bbrGA1P74SDsS5AOsKUUZ7Ot8Dy8DOIVKnXOt9CkKIiwQWHqtuN7DEz9kuSWexKDf31Rw9oqn2jbnCTWe-xtTK89-jdXu1L4tRvp54DchID3mDa4vfpABg56wGTwuTreSJhrfixByESU__hi9uKCWy_eDoYasD0dh3mveM0TnKrSRLbb780FGKqlm1e2oqsZEbGuITt2Tk9olnyK-RzCIUH70E1LtobjcEOs1TDrXhQlTS8gv4N06s" />
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <section class="text-center mb-16">
+            <h1 class="text-5xl md:text-6xl font-black mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-primary to-purple-400">
+                Simple, transparent pricing
+            </h1>
+            <p class="text-xl text-slate-400 max-w-2xl mx-auto">
+                Choose the plan that best fits your needs. No hidden fees.
+            </p>
+        </section>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div class="glass p-8 rounded-2xl border border-border-dark flex flex-col">
+                <h3 class="text-2xl font-bold mb-2">Hobby</h3>
+                <p class="text-slate-400 text-sm mb-6">Perfect for individual developers.</p>
+                <div class="mb-6">
+                    <span class="text-4xl font-black">$0</span>
+                    <span class="text-slate-400">/mo</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> 100 Analyses / month</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Basic Vulnerability Detection</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-slate-600 text-sm">cancel</span> Advanced Optimization</li>
+                </ul>
+                <button onclick="window.location.href='/create_account/signup.html'" class="w-full py-3 px-6 bg-surface-dark border border-primary/30 text-white font-bold rounded-xl hover:bg-primary/20 transition-all">Get Started</button>
+            </div>
+            
+            <div class="glass p-8 rounded-2xl border-2 border-primary relative flex flex-col transform md:-translate-y-4 shadow-2xl glow-shadow">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">Most Popular</div>
+                <h3 class="text-2xl font-bold mb-2">Pro</h3>
+                <p class="text-slate-400 text-sm mb-6">For professional developers and small teams.</p>
+                <div class="mb-6">
+                    <span class="text-4xl font-black">$19</span>
+                    <span class="text-slate-400">/mo</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Unlimited Analyses</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Advanced Optimization</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> API Access</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Priority Support</li>
+                </ul>
+                <button onclick="window.location.href='/create_account/signup.html'" class="w-full py-3 px-6 code-gradient text-white font-bold rounded-xl hover:opacity-90 transition-all">Start Free Trial</button>
+            </div>
+            
+            <div class="glass p-8 rounded-2xl border border-border-dark flex flex-col">
+                <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                <p class="text-slate-400 text-sm mb-6">For large organizations with custom needs.</p>
+                <div class="mb-6">
+                    <span class="text-4xl font-black">Custom</span>
+                </div>
+                <ul class="space-y-4 mb-8 flex-1">
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Everything in Pro</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Custom Integrations</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> Dedicated Account Manager</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> SLA Guarantee</li>
+                </ul>
+                <button onclick="window.location.href='/platform_documentation/documentation.html'" class="w-full py-3 px-6 bg-surface-dark border border-border-dark text-white font-bold rounded-xl hover:bg-surface-dark/80 transition-all">Contact Sales</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-20 py-12 border-t border-border-dark bg-surface-dark">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="flex items-center gap-3">
+                <div class="size-6 bg-primary/20 rounded-md flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-xs">auto_awesome</span>
+                </div>
+                <span class="font-bold text-sm">CodeReview AI © 2024</span>
+            </div>
+            <div class="flex items-center gap-8 text-xs font-medium text-slate-400">
+                <a class="hover:text-primary transition-colors" href="/platform_documentation/documentation.html">Privacy Policy</a>
+                <a class="hover:text-primary transition-colors" href="/platform_documentation/documentation.html">Terms of Service</a>
+                <a class="hover:text-primary transition-colors" href="https://github.com">GitHub Repo</a>
+                <a class="hover:text-primary transition-colors" href="/">Discord Community</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <div
+                    class="size-8 rounded-lg bg-border-dark flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+                    <span class="material-symbols-outlined text-sm">dark_mode</span>
+                </div>
+                <div
+                    class="size-8 rounded-lg bg-border-dark flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+                    <span class="material-symbols-outlined text-sm">language</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnAnalyze = document.getElementById("btnAnalyze");
+            const btnRewrite = document.getElementById("btnRewrite");
+            const codeInput = document.getElementById("codeInput");
+            const languageSelect = document.getElementById("languageSelect");
+
+            const countCritical = document.getElementById("countCritical");
+            const countHigh = document.getElementById("countHigh");
+            const countMedium = document.getElementById("countMedium");
+            const countLow = document.getElementById("countLow");
+
+            const optimizedOutput = document.getElementById("optimizedOutput");
+            const diffContainer = document.getElementById("diffContainer");
+            const timeComplexityVal = document.getElementById("timeComplexityVal");
+            const memoryUsageVal = document.getElementById("memoryUsageVal");
+            const issuesList = document.getElementById("issuesList");
+
+            btnAnalyze.addEventListener("click", async () => {
+                const originalText = btnAnalyze.innerHTML;
+                btnAnalyze.innerHTML = `<span class="material-symbols-outlined animate-spin text-white">progress_activity</span> Analyzing...`;
+                btnAnalyze.disabled = true;
+
+                try {
+                    const response = await fetch("/review", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            code: codeInput.value,
+                            language: languageSelect.value
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        // Update Counts
+                        countCritical.textContent = String(data.issues.critical).padStart(2, '0');
+                        countHigh.textContent = String(data.issues.high).padStart(2, '0');
+                        countMedium.textContent = String(data.issues.medium).padStart(2, '0');
+                        countLow.textContent = String(data.issues.low).padStart(2, '0');
+
+                        // Update Detailed Issues List
+                        issuesList.innerHTML = "";
+                        data.details.forEach(issue => {
+                            let colorClass = "blue";
+                            let icon = "info";
+
+                            if (issue.severity === "critical") { colorClass = "red"; icon = "warning"; }
+                            else if (issue.severity === "high") { colorClass = "orange"; icon = "speed"; }
+                            else if (issue.severity === "medium") { colorClass = "yellow"; icon = "warning_amber"; }
+
+                            issuesList.innerHTML += `
+                            <div class="glass p-5 rounded-xl border-l-4 border-${colorClass}-500 flex items-start gap-4">
+                                <span class="material-symbols-outlined text-${colorClass}-500 mt-1">${icon}</span>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <h5 class="font-bold">${issue.title}</h5>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-${colorClass}-500/20 text-${colorClass}-500 uppercase tracking-tighter">${issue.severity}</span>
+                                    </div>
+                                    <p class="text-sm text-slate-400">${issue.description}</p>
+                                    <p class="text-xs text-slate-300 mt-2"><strong>Suggestion:</strong> ${issue.suggestion}</p>
+                                </div>
+                            </div>
+                        `;
+                        });
+                    } else {
+                        let errorMessage = "Error analyzing code";
+                        try {
+                            const errData = await response.json();
+                            if (errData.detail) errorMessage = errData.detail;
+                        } catch (e) { }
+                        alert("Analysis Failed: \n" + errorMessage);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to connect to the backend.");
+                } finally {
+                    btnAnalyze.innerHTML = originalText;
+                    btnAnalyze.disabled = false;
+                }
+            });
+
+            btnRewrite.addEventListener("click", async () => {
+                const originalText = btnRewrite.innerHTML;
+                btnRewrite.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Rewriting...`;
+                btnRewrite.disabled = true;
+
+                try {
+                    const response = await fetch("/rewrite", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            code: codeInput.value,
+                            language: languageSelect.value
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        optimizedOutput.textContent = data.optimized_code;
+                        timeComplexityVal.textContent = data.metrics.time_complexity;
+                        memoryUsageVal.textContent = data.metrics.memory_usage;
+
+                        diffContainer.innerHTML = "";
+                        if (data.diff) {
+                            data.diff.forEach(d => {
+                                let color = d.type === 'remove' ? 'red' : 'green';
+                                let sign = d.type === 'remove' ? '-' : '+';
+                                diffContainer.innerHTML += `<div class="whitespace-pre-wrap"><span class="text-${color}-400">${sign}</span> ${d.content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+                            });
+                        }
+
+                    } else {
+                        let errorMessage = "Error rewriting code";
+                        try {
+                            const errData = await response.json();
+                            if (errData.detail) errorMessage = errData.detail;
+                        } catch (e) { }
+                        alert("Rewrite Failed: \n" + errorMessage);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to connect to the backend.");
+                } finally {
+                    btnRewrite.innerHTML = originalText;
+                    btnRewrite.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

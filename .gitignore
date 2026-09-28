@@ -1,14 +1,28 @@
 # Environment variables
 .env
+**/.env
+.env.*
+!.env.example
+!**/.env.example
 
-# Python cache
+# Python cache & compiled files
 __pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Virtual environments
 venv/
+env/
+.venv/
 
-# OS files
+# OS and Runner files
 .DS_Store
 Thumbs.db
-powershell.cmd
+powershell.cmd
+**/powershell.cmd

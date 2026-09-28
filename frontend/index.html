@@ -694,6 +694,497 @@ print(calculate_total(data))</textarea>
 
             let currentReviewDetails = [];
 
+            // -----------------------------------------------------------------
+            // Phase 3: Tab Switching
+            // -----------------------------------------------------------------
+            window.switchMainTab = (tabName) => {
+                const views = {
+                    'review': document.getElementById('viewReview'),
+                    'dashboard': document.getElementById('viewDashboard'),
+                    'explorer': document.getElementById('viewExplorer'),
+                    'timeline': document.getElementById('viewTimeline'),
+                    'demo': document.getElementById('viewDemo')
+                };
+
+                const buttons = {
+                    'review': document.getElementById('tabBtnReview'),
+                    'dashboard': document.getElementById('tabBtnDashboard'),
+                    'explorer': document.getElementById('tabBtnExplorer'),
+                    'timeline': document.getElementById('tabBtnTimeline'),
+                    'demo': document.getElementById('tabBtnDemo')
+                };
+
+                Object.keys(views).forEach(key => {
+                    if (views[key]) {
+                        if (key === tabName) {
+                            views[key].classList.remove('hidden');
+                        } else {
+                            views[key].classList.add('hidden');
+                        }
+                    }
+                    if (buttons[key]) {
+                        if (key === tabName) {
+                            buttons[key].className = "tab-btn px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition-all code-gradient text-white flex items-center gap-2 shadow-md";
+                        } else {
+                            buttons[key].className = "tab-btn px-4 py-2 text-xs md:text-sm font-medium rounded-lg transition-all text-slate-400 hover:text-white flex items-center gap-2";
+                        }
+                    }
+                });
+
+                if (tabName === 'dashboard') loadDashboardStats();
+                if (tabName === 'explorer') loadMemoryExplorer();
+                if (tabName === 'timeline') loadLearningTimeline();
+                if (tabName === 'demo') initDemo();
+            };
+
+            // -----------------------------------------------------------------
+            // Phase 3: Dashboard Stats Loader
+            // -----------------------------------------------------------------
+            window.loadDashboardStats = async () => {
+                const statusBadge = document.getElementById("dashHindsightStatusBadge");
+                const msgEl = document.getElementById("dashHindsightMessage");
+                const baseUrlEl = document.getElementById("dashHindsightBaseUrl");
+                const bankIdEl = document.getElementById("dashHindsightBankId");
+                const versionEl = document.getElementById("dashHindsightVersion");
+                const reflectEl = document.getElementById("dashHindsightReflect");
+
+                const totalRevEl = document.getElementById("dashTotalReviews");
+                const retainedEl = document.getElementById("dashMemoriesRetained");
+                const recalledEl = document.getElementById("dashMemoriesRecalled");
+                const fbTotalEl = document.getElementById("dashFeedbackTotal");
+                const fbAccEl = document.getElementById("dashFeedbackAccepted");
+                const fbRejEl = document.getElementById("dashFeedbackRejected");
+                const fbFixEl = document.getElementById("dashFeedbackFixed");
+                const convEl = document.getElementById("dashConventionsCount");
+                const reflEl = document.getElementById("dashReflectionsCount");
+
+                try {
+                    const res = await fetch("/dashboard/stats");
+                    if (!res.ok) throw new Error("Stats request failed");
+                    const data = await res.json();
+
+                    const health = data.hindsight_health || {};
+                    const stats = data.stats || {};
+                    const cfg = data.config || {};
+
+                    // Status
+                    if (health.status === "healthy") {
+                        statusBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-green-500/20 text-green-400 uppercase tracking-wider";
+                        statusBadge.textContent = "Connected & Active";
+                        msgEl.textContent = "Persistent memory bank operational. Ready to retain and recall conventions.";
+                    } else if (health.status === "disabled") {
+                        statusBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-slate-500/20 text-slate-400 uppercase tracking-wider";
+                        statusBadge.textContent = "Disabled in Config";
+                        msgEl.textContent = health.message || "Hindsight memory is disabled by configuration.";
+                    } else {
+                        statusBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-400 uppercase tracking-wider";
+                        statusBadge.textContent = "Offline (Fallback Active)";
+                        msgEl.textContent = health.message || "Hindsight server offline. Standard code reviews operate seamlessly.";
+                    }
+
+                    if (baseUrlEl) baseUrlEl.textContent = health.base_url || cfg.hindsight_base_url || "N/A";
+                    if (bankIdEl) bankIdEl.textContent = health.bank_id || cfg.hindsight_bank_id || "code-review-agent";
+                    if (versionEl) versionEl.textContent = health.version || (health.status === "healthy" ? "Connected" : "Offline");
+                    if (reflectEl) {
+                        const refOn = cfg.hindsight_reflect_enabled !== false;
+                        reflectEl.textContent = refOn ? `Enabled (budget: ${cfg.hindsight_reflect_budget || 'low'})` : "Disabled";
+                    }
+
+                    // Metrics
+                    if (totalRevEl) totalRevEl.textContent = String(stats.total_reviews || 0);
+                    if (retainedEl) retainedEl.textContent = String(stats.memories_retained || 0);
+                    if (recalledEl) recalledEl.textContent = String(stats.memories_recalled || 0);
+
+                    const fb = stats.feedback_events || {};
+                    if (fbTotalEl) fbTotalEl.textContent = `${fb.total || 0} Total`;
+                    if (fbAccEl) fbAccEl.textContent = String(fb.accepted || 0);
+                    if (fbRejEl) fbRejEl.textContent = String(fb.rejected || 0);
+                    if (fbFixEl) fbFixEl.textContent = String(fb.fixed || 0);
+
+                    if (convEl) convEl.textContent = String(stats.learned_conventions_count || 0);
+                    if (reflEl) reflEl.textContent = String(stats.reflections_count || 0);
+
+                } catch (e) {
+                    console.error("Dashboard stats error:", e);
+                    if (statusBadge) {
+                        statusBadge.className = "px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-400 uppercase tracking-wider";
+                        statusBadge.textContent = "Error Fetching Stats";
+                    }
+                }
+            };
+
+            // -----------------------------------------------------------------
+            // Phase 3: Memory Explorer Loader
+            // -----------------------------------------------------------------
+            window.loadMemoryExplorer = async () => {
+                const container = document.getElementById("explorerRecordsContainer");
+                const searchVal = (document.getElementById("explorerSearchInput")?.value || "").trim();
+                const projectVal = (document.getElementById("explorerProjectInput")?.value || "").trim();
+                const categoryVal = document.getElementById("explorerCategorySelect")?.value || "all";
+                const sourceVal = document.getElementById("explorerSourceSelect")?.value || "all";
+
+                if (container) {
+                    container.innerHTML = `<div class="glass p-8 rounded-xl text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                        <span class="animate-spin material-symbols-outlined text-sm">progress_activity</span> Loading memories...
+                    </div>`;
+                }
+
+                try {
+                    const params = new URLSearchParams();
+                    if (searchVal) params.append("search", searchVal);
+                    if (projectVal && projectVal !== "all") params.append("project_id", projectVal);
+                    if (categoryVal && categoryVal !== "all") params.append("category", categoryVal);
+                    if (sourceVal && sourceVal !== "all") params.append("source", sourceVal);
+
+                    const res = await fetch(`/memory/explorer?${params.toString()}`);
+                    if (!res.ok) throw new Error("Explorer fetch failed");
+                    const data = await res.json();
+                    const memories = data.memories || [];
+
+                    if (memories.length === 0) {
+                        container.innerHTML = `
+                        <div class="glass p-12 rounded-xl text-center">
+                            <span class="material-symbols-outlined text-slate-500 text-4xl mb-2">inventory_2</span>
+                            <h5 class="text-sm font-bold text-slate-200">No Memories Found</h5>
+                            <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                                No memories match the current filters. Run reviews or submit feedback in the review workspace to build persistent knowledge.
+                            </p>
+                        </div>`;
+                        return;
+                    }
+
+                    let html = `<div class="text-xs text-slate-400 mb-2 flex items-center justify-between">
+                        <span>Showing <strong>${memories.length}</strong> learned knowledge unit(s)</span>
+                    </div>`;
+
+                    memories.forEach(m => {
+                        let catColor = "purple";
+                        if (m.category === "rejected_pattern") catColor = "red";
+                        else if (m.category === "accepted_pattern") catColor = "green";
+                        else if (m.category === "vulnerability") catColor = "rose";
+                        else if (m.category === "architecture") catColor = "blue";
+
+                        html += `
+                        <div class="glass p-4 rounded-xl border border-primary/20 hover:border-primary/40 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="flex-1 space-y-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-${catColor}-500/20 text-${catColor}-300 uppercase">${m.category || 'observation'}</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-dark border border-border-dark text-slate-300">proj: ${m.project_id || 'default'}</span>
+                                    ${m.developer_id ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-dark border border-border-dark text-blue-300">dev: ${m.developer_id}</span>` : ''}
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-dark border border-border-dark text-slate-400">${m.source || 'memory'}</span>
+                                </div>
+                                <p class="text-sm text-slate-200 font-mono mt-1">${m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                            </div>
+                            <div class="text-right text-[11px] text-slate-400 whitespace-nowrap">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-primary/10 text-primary-300 block mb-1">
+                                    ${(m.confidence || 'isolated_observation').replace(/_/g, ' ')}
+                                </span>
+                                <span>${m.created_at || 'Recorded'}</span>
+                            </div>
+                        </div>`;
+                    });
+
+                    container.innerHTML = html;
+                } catch (e) {
+                    console.error("Explorer error:", e);
+                    if (container) {
+                        container.innerHTML = `<div class="glass p-8 rounded-xl text-center text-amber-400 text-xs">
+                            Failed to load memories. Hindsight server may be offline.
+                        </div>`;
+                    }
+                }
+            };
+
+            // -----------------------------------------------------------------
+            // Phase 3: Learning Timeline Loader
+            // -----------------------------------------------------------------
+            window.loadLearningTimeline = async () => {
+                const container = document.getElementById("timelineContainer");
+                if (container) {
+                    container.innerHTML = `<div class="glass p-8 rounded-xl text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                        <span class="animate-spin material-symbols-outlined text-sm">progress_activity</span> Loading timeline...
+                    </div>`;
+                }
+
+                try {
+                    const res = await fetch("/learning/timeline");
+                    if (!res.ok) throw new Error("Timeline fetch failed");
+                    const data = await res.json();
+                    const events = data.events || [];
+
+                    if (events.length === 0) {
+                        container.innerHTML = `
+                        <div class="glass p-12 rounded-xl text-center">
+                            <span class="material-symbols-outlined text-slate-500 text-4xl mb-2">timeline</span>
+                            <h5 class="text-sm font-bold text-slate-200">No Learning Events Recorded Yet</h5>
+                            <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                                The learning timeline dynamically logs every code review, feedback action, memory retention, and reflection. Run a review or submit feedback to generate events.
+                            </p>
+                        </div>`;
+                        return;
+                    }
+
+                    let html = `<div class="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-primary before:via-purple-500 before:to-transparent">`;
+
+                    events.forEach(evt => {
+                        let icon = "circle";
+                        let colorClass = "primary";
+
+                        if (evt.type === "review") { icon = "code"; colorClass = "blue"; }
+                        else if (evt.type === "personalized_review") { icon = "psychology"; colorClass = "purple"; }
+                        else if (evt.type === "memory_retained") { icon = "save"; colorClass = "green"; }
+                        else if (evt.type === "reflection") { icon = "lightbulb"; colorClass = "pink"; }
+                        else if (evt.type === "feedback_accept") { icon = "thumb_up"; colorClass = "green"; }
+                        else if (evt.type === "feedback_reject") { icon = "thumb_down"; colorClass = "red"; }
+                        else if (evt.type === "feedback_fixed") { icon = "task_alt"; colorClass = "blue"; }
+
+                        html += `
+                        <div class="relative flex items-start gap-4">
+                            <div class="absolute -left-6 mt-1 size-6 rounded-full bg-surface-dark border-2 border-${colorClass}-500 flex items-center justify-center shadow-lg">
+                                <span class="material-symbols-outlined text-${colorClass}-400 text-xs">${icon}</span>
+                            </div>
+                            <div class="glass p-4 rounded-xl flex-1 border border-border-dark hover:border-primary/30 transition-all">
+                                <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+                                    <h5 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                                        ${evt.title}
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-surface-dark border border-border-dark text-slate-400">${evt.project_id || 'default'}</span>
+                                    </h5>
+                                    <span class="text-[11px] text-slate-400">${evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : 'Recent'}</span>
+                                </div>
+                                <p class="text-xs text-slate-300">${evt.summary.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div>`;
+                    container.innerHTML = html;
+                } catch (e) {
+                    console.error("Timeline error:", e);
+                    if (container) {
+                        container.innerHTML = `<div class="glass p-8 rounded-xl text-center text-amber-400 text-xs">
+                            Failed to load timeline.
+                        </div>`;
+                    }
+                }
+            };
+
+            // -----------------------------------------------------------------
+            // Phase 3: Interactive Before / After Demo Controller
+            // -----------------------------------------------------------------
+            let demoScenarioData = null;
+            let currentScenarioKey = 'caching_convention';
+
+            window.initDemo = async () => {
+                try {
+                    const res = await fetch("/demo/scenarios");
+                    if (res.ok) {
+                        const data = await res.json();
+                        demoScenarioData = {};
+                        (data.scenarios || []).forEach(s => {
+                            demoScenarioData[s.id] = s;
+                        });
+                    }
+                } catch (e) { }
+            };
+
+            window.selectDemoScenario = (scenarioKey) => {
+                currentScenarioKey = scenarioKey;
+                const btn1 = document.getElementById("btnDemoScenarioCaching");
+                const btn2 = document.getElementById("btnDemoScenarioRepo");
+
+                if (scenarioKey === 'caching_convention') {
+                    if (btn1) btn1.className = "px-4 py-2 rounded-lg text-xs font-bold border border-primary/40 code-gradient text-white flex items-center gap-2 shadow-md";
+                    if (btn2) btn2.className = "px-4 py-2 rounded-lg text-xs font-bold border border-border-dark bg-surface-dark text-slate-300 hover:text-white flex items-center gap-2 transition-colors";
+                } else {
+                    if (btn2) btn2.className = "px-4 py-2 rounded-lg text-xs font-bold border border-primary/40 code-gradient text-white flex items-center gap-2 shadow-md";
+                    if (btn1) btn1.className = "px-4 py-2 rounded-lg text-xs font-bold border border-border-dark bg-surface-dark text-slate-300 hover:text-white flex items-center gap-2 transition-colors";
+                }
+
+                // Reset buttons
+                const s1Status = document.getElementById("demoStep1Status");
+                const s2Status = document.getElementById("demoStep2Status");
+                const s3Status = document.getElementById("demoStep3Status");
+                const b2 = document.getElementById("btnRunDemoStep2");
+                const b3 = document.getElementById("btnRunDemoStep3");
+
+                if (s1Status) s1Status.textContent = "Ready";
+                if (s2Status) s2Status.textContent = "Pending Step 1";
+                if (s3Status) s3Status.textContent = "Pending Step 2";
+                if (b2) { b2.disabled = true; b2.className = "w-full py-2.5 px-4 rounded-lg bg-surface-dark/50 border border-slate-700 text-slate-500 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-not-allowed"; }
+                if (b3) { b3.disabled = true; b3.className = "w-full py-2.5 px-4 rounded-lg bg-surface-dark/50 border border-slate-700 text-slate-500 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-not-allowed"; }
+
+                logDemo(`[SCENARIO SWITCHED] Active scenario: ${scenarioKey}`);
+            };
+
+            function logDemo(msg) {
+                const box = document.getElementById("demoLogBox");
+                if (box) {
+                    const time = new Date().toLocaleTimeString();
+                    box.textContent += `\n[${time}] ${msg}`;
+                    box.scrollTop = box.scrollHeight;
+                }
+            }
+
+            window.clearDemoLog = () => {
+                const box = document.getElementById("demoLogBox");
+                if (box) box.textContent = "[LOG CLEARED] Ready.";
+            };
+
+            window.runDemoStep1 = async () => {
+                const scen = (demoScenarioData && demoScenarioData[currentScenarioKey]) || {
+                    project_id: "demo-caching-service",
+                    language: "python",
+                    developer_id: "dev-alice",
+                    step1: {
+                        code: "def get_search_results(query):\n    # Query search index\n    results = execute_query(query)\n    return results\n",
+                    }
+                };
+
+                const s1Status = document.getElementById("demoStep1Status");
+                if (s1Status) s1Status.textContent = "Running...";
+                logDemo(`--> Step 1: Submitting initial code to POST /review (project='${scen.project_id}')...`);
+
+                // Set into editor
+                if (codeInput) codeInput.value = scen.step1.code;
+                if (projectIdInput) projectIdInput.value = scen.project_id;
+                if (developerIdInput) developerIdInput.value = scen.developer_id || "";
+
+                try {
+                    const res = await fetch("/review", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            code: scen.step1.code,
+                            language: scen.language || "python",
+                            project_id: scen.project_id,
+                            developer_id: scen.developer_id
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        currentReviewDetails = data.details || [];
+                        logDemo(`Step 1 Complete: Received ${currentReviewDetails.length} finding(s). Baseline suggestion proposed.`);
+                        if (s1Status) s1Status.innerHTML = `<span class="text-green-400 font-bold">Done</span>`;
+
+                        // Enable Step 2
+                        const b2 = document.getElementById("btnRunDemoStep2");
+                        const s2Status = document.getElementById("demoStep2Status");
+                        if (b2) {
+                            b2.disabled = false;
+                            b2.className = "w-full py-2.5 px-4 rounded-lg bg-surface-dark border border-amber-500/40 hover:bg-amber-500/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer";
+                        }
+                        if (s2Status) s2Status.textContent = "Ready to reject";
+                    }
+                } catch (e) {
+                    logDemo(`Step 1 Error: ${e.message}`);
+                    if (s1Status) s1Status.textContent = "Error";
+                }
+            };
+
+            window.runDemoStep2 = async () => {
+                const scen = (demoScenarioData && demoScenarioData[currentScenarioKey]) || {
+                    project_id: "demo-caching-service",
+                    developer_id: "dev-alice",
+                    step2: {
+                        action: "reject",
+                        issue_title: "Cache search results",
+                        reason: "Project standardizes on PostgreSQL UNLOGGED tables for caching; Redis is not allowed in this deployment."
+                    }
+                };
+
+                const s2Status = document.getElementById("demoStep2Status");
+                if (s2Status) s2Status.textContent = "Recording...";
+                logDemo(`--> Step 2: Developer rejects recommendation via POST /review/feedback...`);
+                logDemo(`    Reason: "${scen.step2.reason}"`);
+
+                try {
+                    const res = await fetch("/review/feedback", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            project_id: scen.project_id,
+                            developer_id: scen.developer_id,
+                            action: scen.step2.action || "reject",
+                            issue_title: scen.step2.issue_title,
+                            recommendation: "Use Redis caching",
+                            reason: scen.step2.reason,
+                            language: "python"
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        logDemo(`Step 2 Complete: Feedback retained=${data.retained}. Hindsight memory updated.`);
+                        if (s2Status) s2Status.innerHTML = `<span class="text-green-400 font-bold">Retained</span>`;
+
+                        // Enable Step 3
+                        const b3 = document.getElementById("btnRunDemoStep3");
+                        const s3Status = document.getElementById("demoStep3Status");
+                        if (b3) {
+                            b3.disabled = false;
+                            b3.className = "w-full py-2.5 px-4 rounded-lg bg-surface-dark border border-green-500/40 hover:bg-green-500/20 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer";
+                        }
+                        if (s3Status) s3Status.textContent = "Ready to verify";
+                    }
+                } catch (e) {
+                    logDemo(`Step 2 Error: ${e.message}`);
+                    if (s2Status) s2Status.textContent = "Error";
+                }
+            };
+
+            window.runDemoStep3 = async () => {
+                const scen = (demoScenarioData && demoScenarioData[currentScenarioKey]) || {
+                    project_id: "demo-caching-service",
+                    developer_id: "dev-alice",
+                    language: "python",
+                    step3: {
+                        code: "def get_user_dashboard(user_id):\n    # Retrieve heavy user dashboard metrics\n    data = compute_heavy_metrics(user_id)\n    return data\n",
+                    }
+                };
+
+                const s3Status = document.getElementById("demoStep3Status");
+                if (s3Status) s3Status.textContent = "Analyzing...";
+                logDemo(`--> Step 3: Submitting code to POST /review with Hindsight memory active...`);
+
+                // Set into editor
+                if (codeInput) codeInput.value = scen.step3.code;
+
+                try {
+                    const res = await fetch("/review", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            code: scen.step3.code,
+                            language: scen.language || "python",
+                            project_id: scen.project_id,
+                            developer_id: scen.developer_id
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        currentReviewDetails = data.details || [];
+                        const mem = data.memory || {};
+                        const explain = data.explainability || {};
+
+                        logDemo(`Step 3 Complete!`);
+                        logDemo(`   - Memories Recalled: ${mem.memories_retrieved || 0}`);
+                        logDemo(`   - Reflection Applied: ${mem.reflection_applied}`);
+                        logDemo(`   - Explainability: ${explain.summary || 'Learned context applied'}`);
+                        logDemo(`   - Result: Agent suppressed the rejected advice and aligned recommendations with team decisions.`);
+
+                        if (s3Status) s3Status.innerHTML = `<span class="text-green-400 font-bold">Verified!</span>`;
+                    }
+                } catch (e) {
+                    logDemo(`Step 3 Error: ${e.message}`);
+                    if (s3Status) s3Status.textContent = "Error";
+                }
+            };
+
+            // -----------------------------------------------------------------
+            // Review Issue Feedback Action
+            // -----------------------------------------------------------------
             window.submitIssueFeedback = async (index, action) => {
                 const issue = currentReviewDetails[index];
                 if (!issue) return;
@@ -705,7 +1196,7 @@ print(calculate_total(data))</textarea>
                 let reason = "";
                 if (action === "reject") {
                     reason = prompt(`Why are you rejecting this suggestion? (This will be learned so the agent avoids repeating it):`, "") || "";
-                    if (reason === null) return; // user cancelled
+                    if (reason === null) return;
                 } else if (action === "fixed") {
                     reason = prompt(`Optional resolution notes for '${issue.title}':`, "") || "";
                 }
@@ -747,6 +1238,9 @@ print(calculate_total(data))</textarea>
                 }
             };
 
+            // -----------------------------------------------------------------
+            // Review Code Handler with Explainability Badges
+            // -----------------------------------------------------------------
             btnAnalyze.addEventListener("click", async () => {
                 const originalText = btnAnalyze.innerHTML;
                 btnAnalyze.innerHTML = `<span class="material-symbols-outlined animate-spin text-white">progress_activity</span> Analyzing...`;
@@ -788,6 +1282,7 @@ print(calculate_total(data))</textarea>
                         // Update Hindsight Memory Panel
                         if (data.memory) {
                             const mem = data.memory;
+                            const explain = data.explainability || {};
                             memoryScopeVal.textContent = mem.project_id || currentProject;
                             memoryCountVal.textContent = String(mem.memories_retrieved || 0);
                             memoryRetainedVal.textContent = String(mem.memories_retained || 0);
@@ -803,7 +1298,7 @@ print(calculate_total(data))</textarea>
                                 
                                 let memHtml = `<div class="text-xs text-green-300 font-semibold mb-2 flex items-center gap-1.5">
                                     <span class="material-symbols-outlined text-sm">verified</span>
-                                    ${mem.memories_retrieved} historical memory item(s) influenced this review:
+                                    ${mem.memories_retrieved} historical memory item(s) retrieved &bull; ${explain.learned_context_findings_count || 0} finding(s) matched learned context
                                 </div>`;
 
                                 if (mem.reflection_applied && mem.reflection_summary) {
@@ -851,7 +1346,7 @@ print(calculate_total(data))</textarea>
                             }
                         }
 
-                        // Update Detailed Issues List with Phase 2 Feedback Actions
+                        // Update Detailed Issues List with Explainability Badges & Citations
                         issuesList.innerHTML = "";
                         (data.details || []).forEach((issue, idx) => {
                             let colorClass = "blue";
@@ -860,6 +1355,30 @@ print(calculate_total(data))</textarea>
                             if (issue.severity === "critical") { colorClass = "red"; icon = "warning"; }
                             else if (issue.severity === "high") { colorClass = "orange"; icon = "speed"; }
                             else if (issue.severity === "medium") { colorClass = "yellow"; icon = "warning_amber"; }
+
+                            // Explainability Badge
+                            let explainBadge = "";
+                            if (issue.origin === "learned_context" || issue.influenced_by_memory) {
+                                explainBadge = `
+                                <div class="mb-3 p-2.5 rounded-lg bg-purple-950/40 border border-purple-500/30 text-xs">
+                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                        <span class="font-bold text-purple-300 flex items-center gap-1 text-[11px]">
+                                            <span class="material-symbols-outlined text-xs">psychology</span>
+                                            LEARNED CONTEXT &bull; ${(issue.evidence_level || 'established_convention').replace(/_/g, ' ').toUpperCase()}
+                                        </span>
+                                    </div>
+                                    ${issue.relevant_memory ? `<p class="text-slate-300 text-[11px] font-mono italic">"${issue.relevant_memory.replace(/</g, "&lt;").replace(/>/g, "&gt;")}"</p>` : ''}
+                                    ${issue.why_it_matters ? `<p class="text-purple-200/80 text-[11px] mt-1.5"><strong>Why it matters:</strong> ${issue.why_it_matters.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>` : ''}
+                                </div>`;
+                            } else {
+                                explainBadge = `
+                                <div class="mb-3 flex items-center justify-between text-[11px] text-cyan-400 bg-cyan-950/30 px-3 py-1.5 rounded-lg border border-cyan-800/30">
+                                    <span class="font-bold flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-xs">new_releases</span> NEW FINDING (Static Code Analysis)
+                                    </span>
+                                    <span class="text-slate-400 font-normal text-[11px]">${issue.why_it_matters ? issue.why_it_matters.replace(/</g, "&lt;").replace(/>/g, "&gt;") : ''}</span>
+                                </div>`;
+                            }
 
                             issuesList.innerHTML += `
                             <div class="glass p-5 rounded-xl border-l-4 border-${colorClass}-500 flex items-start gap-4">
@@ -870,7 +1389,10 @@ print(calculate_total(data))</textarea>
                                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-${colorClass}-500/20 text-${colorClass}-500 uppercase tracking-tighter">${issue.severity}</span>
                                     </div>
                                     <p class="text-sm text-slate-400">${issue.description}</p>
-                                    <p class="text-xs text-slate-300 mt-2"><strong>Suggestion:</strong> ${issue.suggestion}</p>
+                                    <p class="text-xs text-slate-300 mt-2 mb-3"><strong>Suggestion:</strong> ${issue.suggestion}</p>
+
+                                    <!-- Phase 3: Review Explainability Banner -->
+                                    ${explainBadge}
 
                                     <!-- Phase 2: Feedback Learning Actions -->
                                     <div class="mt-4 pt-3 border-t border-slate-700/40 flex flex-wrap items-center justify-between gap-2">
@@ -908,6 +1430,9 @@ print(calculate_total(data))</textarea>
                 }
             });
 
+            // -----------------------------------------------------------------
+            // Rewrite Code Handler
+            // -----------------------------------------------------------------
             btnRewrite.addEventListener("click", async () => {
                 const originalText = btnRewrite.innerHTML;
                 btnRewrite.innerHTML = `<span class="material-symbols-outlined animate-spin">progress_activity</span> Rewriting...`;

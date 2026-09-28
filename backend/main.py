@@ -230,7 +230,7 @@ async def review_code(request: CodeRequest):
         memory_instructions = f"""
 {memory_context_prompt}
 
-CRITICAL PERSONALIZATION & MEMORY INSTRUCTIONS:
+CRITICAL MEMORY INSTRUCTIONS:
 - You have access to persistent historical memories and team decisions from prior reviews.
 - DO NOT suggest recommendations that the team has explicitly REJECTED in the memory context above.
 - Maintain consistency with established architectural patterns and reinforced project conventions.

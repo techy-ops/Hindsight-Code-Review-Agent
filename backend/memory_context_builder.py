@@ -145,7 +145,7 @@ def build_memory_context(
         scope_header += f" | Language: {language}"
 
     sections = [
-        "=== BEGIN HISTORICAL PROJECT & TEAM MEMORY (HINDSIGHT) ===",
+        "=== BEGIN HISTORICAL PROJECT MEMORY (HINDSIGHT) ===",
         scope_header,
         "Notice to Reviewer: The following context represents durable memories, past decisions, and team conventions.",
         "CRITICAL REVIEW POLICIES:",
@@ -190,12 +190,12 @@ def build_memory_context(
     add_section("Performance & Optimization Guidelines", performance)
     add_section("Previous Recommendations & Decisions", recommendations)
 
-    sections.append("=== END HISTORICAL PROJECT & TEAM MEMORY ===")
+    sections.append("=== END HISTORICAL PROJECT MEMORY ===")
     
     result = "\n".join(sections).strip()
     
     # Bounded in size
     if len(result) > MAX_TOTAL_CONTEXT_CHARS:
-        result = result[:MAX_TOTAL_CONTEXT_CHARS] + "\n... [Context truncated for length]\n=== END HISTORICAL PROJECT & TEAM MEMORY ==="
+        result = result[:MAX_TOTAL_CONTEXT_CHARS] + "\n... [Context truncated for length]\n=== END HISTORICAL PROJECT MEMORY ==="
 
     return result
